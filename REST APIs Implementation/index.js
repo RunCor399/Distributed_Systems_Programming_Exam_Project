@@ -123,12 +123,7 @@ app.use(function(err, req, res, next) {
 
 
 process.on("SIGINT", (signal) => {
-    db.exec("VACUUM", (err) => {
-        if (err) {
-          console.error(err.message);
-        }
-        console.log("VACUUM command executed successfully.");
-      });
+    db.close();
 });
 
 

@@ -423,8 +423,8 @@ paths:
         - 'films/public/{filmId}/reviews'
       security:
         - cookieAuth: []
-      summary: Issue film reviewr to some users
-      description: The film with ID filmId is assigned to one or more users for review and the corresponding reviews are created. The users are specified in the review representations in the request body. This operation can only be performed by the owner.
+      summary: Issue single or cooperative film review to users
+      description: The film with ID filmId is assigned to one or more users for review and the corresponding review is created. The users are specified in the reviewers array representation in the request body. This operation can only be performed by the owner.
       operationId: issueFilmReview
       parameters:
         - name: filmId
@@ -441,7 +441,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/Review'
+                $ref: '../JSON Schemas/review_schema.json'
         required: true
       responses:
         '201':
@@ -451,7 +451,7 @@ paths:
               schema:
                   type: array
                   items:
-                    $ref: '#/components/schemas/Review'
+                    $ref: '../JSON Schemas/review_schema.json'
         '400':
           description: Bad Request
           content: {}
@@ -492,6 +492,12 @@ paths:
           schema:
             type: integer
           description: ID of the requested page (if absent, the first page is returned)'
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+            enum: ["single", "coop"]
       responses:
         '200':
           description: Successful operation
@@ -511,7 +517,7 @@ paths:
                       reviews:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Review'
+                          $ref: '../JSON Schemas/review_response_schema.json'
                       next:
                         type: string
                         format: uri
@@ -521,13 +527,13 @@ paths:
         '500':
           description: Internal Server Error
           content: {}
-  '/api/films/public/{filmId}/reviews/{reviewerId}':
+  '/api/films/public/{filmId}/reviews/{reviewId}':
     get:
       tags:
-        - 'films/public/{filmId}/reviews/{reviewerId}'
+        - 'films/public/{filmId}/reviews/{reviewId}'
       summary: Retrieve a review that has been issued/completed for a film 
       description: >-
-        The review of the film with ID filmID issued to the user with ID reviewerId is retrieved. This operation does not require authentication. 
+        The review with the given reviewId of the film with ID filmId is retrieved. This operation does not require authentication. 
       operationId: getSingleReview
       parameters:
         - name: filmId
@@ -537,9 +543,9 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: reviewerId
+        - name: reviewId
           in: path
-          description: ID of the user to whom the review has been issued
+          description: ID of the review
           required: true
           schema:
             type: integer
@@ -550,7 +556,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Review'
+                $ref: '../JSON Schemas/review_response_schema.json'
         '404':
           description: Not Found
           content: {}
@@ -559,11 +565,11 @@ paths:
           content: {}
     put:
       tags:
-        - 'films/public/{filmId}/reviews/{reviewerId}'
+        - 'films/public/{filmId}/reviews/{reviewId}'
       security:
         - cookieAuth: []
       summary: Complete a review
-      description: The review of the film with ID filmId and issued to the user with ID reviewerId is completed. This operation only allows setting the "completed" property to the "true" value, and changing the values of the "reviewDate", "rating", and "review" properties. This operation can be performed only by the invited reviewer.
+      description: The review with ID reviewId of the film with ID filmId is completed. This operation only allows setting the "completed" property to the "true" value, and changing the values of the "reviewDate", "rating", and "review" properties. This operation can be performed only by one of the invited reviewers.
       operationId: updateSingleReview
       parameters:
         - name: filmId
@@ -573,9 +579,9 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: reviewerId
+        - name: reviewId
           in: path
-          description: ID of the user to whom the review has been issued
+          description: ID of the review
           required: true
           schema:
             type: integer
@@ -585,25 +591,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: false
-              properties:
-                completed:
-                  type: boolean
-                  default: 'true'
-                reviewDate:
-                  type: string
-                  format: date
-                  description: the date when the review has been completed by the invited user
-                rating:
-                  type: integer
-                  description: the rating the reviewer has given to the film
-                  minimum: 1
-                  maximum: 10
-                review:
-                  type: string
-                  description: a textual description of the review
-                  maxLength: 1000
+              $ref: '../JSON Schemas/review_update_schema.json'
       responses:
         '204':
           description: No Content
@@ -625,11 +613,11 @@ paths:
           content: {}
     delete:
       tags:
-        - 'films/public/{filmId}/reviews/{reviewerId}'
+        - 'films/public/{filmId}/reviews/{reviewId}'
       security:
         - cookieAuth: []
-      summary: Delete a review invitation
-      description: The review of the film with ID filmId and issued to the user with ID reviewerId is deleted. This operation can only be performed by the owner, and only if the review has not yet been completed by the reviewer.
+      summary: Delete a review invitation, either single or cooperative
+      description: The review with ID reviewId of the film with ID filmId is deleted. This operation can only be performed by the owner, and only if the review has not yet been completed.
       operationId: deleteSingleReview
       parameters:
         - name: filmId
@@ -639,9 +627,9 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: reviewerId
+        - name: reviewId
           in: path
-          description: ID of the user to whom the review has been issued
+          description: ID of the review
           required: true
           schema:
             type: integer
@@ -662,6 +650,169 @@ paths:
         '500':
           description: Internal Server Error
           content: {}
+
+  '/api/films/public/{filmId}/reviews/{reviewId}/drafts':
+    get:
+      tags:
+        - 'films/public/{filmId}/reviews/{reviewId}/drafts'
+      summary: Retrieve all the drafts that have been created for a specific film review
+      description: >-
+        The drafts of a review with ID reviewId associated to a film with ID filmId are retrieved, This operation can only be formed by users that have been invited to review this film. 
+      operationId: getAllDrafts
+      parameters:
+        - name: filmId
+          in: path
+          description: ID of the film associated to the review for which the draft will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: reviewId
+          in: path
+          description: ID of the review whose drafts will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: pageNo
+          required: false
+          schema:
+            type: integer
+          description: ID of the requested page (if absent, the first page is returned)'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      totalPages:
+                        type: integer
+                      currentPage:
+                        type: integer
+                      totalItems:
+                        type: integer
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '../JSON Schemas/draft_schema.json'
+                      next:
+                        type: string
+                        format: uri
+        '404':
+          description: Not Found
+          content: {}
+        '500':
+          description: Internal Server Error
+          content: {}
+
+  '/api/films/public/{filmId}/reviews/{reviewId}/drafts/{draftId}':
+    get:
+      tags:
+        - 'films/public/{filmId}/reviews/{reviewId}/drafts/{draftId}'
+      summary: Retrieve a specific draft with ID draftId bound to a review with ID reviewId
+      description: >-
+        A draft with ID draftId of a review with ID reviewId is retrieved, This operation can only be formed by users that have been invited to review this film. 
+      operationId: getDraft
+      parameters:
+        - name: filmId
+          in: path
+          description: ID of the film associated to the review for which a draft will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: reviewId
+          in: path
+          description: ID of the review whose draft will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: draftId
+          in: path
+          description: ID of a specific draft
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '../JSON Schemas/draft_schema.json'
+        '404':
+          description: Not Found
+          content: {}
+        '500':
+          description: Internal Server Error
+          content: {}
+
+  '/api/films/public/{filmId}/reviews/{reviewId}/reviewers':
+    get:
+      tags:
+        - 'films/public/{filmId}/reviews/{reviewId}/reviewers'
+      summary: Retrieve all the reviewers of a specific review with ID reviewId
+      description: >-
+        The reviewers of a review with ID reviewId are retrieved, This operation can only be formed by users that have been invited to review this film?. 
+      operationId: getAllReviewers
+      parameters:
+        - name: filmId
+          in: path
+          description: ID of the film associated to the review for which the reviewers will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: reviewId
+          in: path
+          description: ID of the review whose reviewers will be retrieved
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: pageNo
+          required: false
+          schema:
+            type: integer
+          description: ID of the requested page (if absent, the first page is returned)'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      totalPages:
+                        type: integer
+                      currentPage:
+                        type: integer
+                      totalItems:
+                        type: integer
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '../JSON Schemas/reviewers_schema.json'
+                      next:
+                        type: string
+                        format: uri
+        '404':
+          description: Not Found
+          content: {}
+        '500':
+          description: Internal Server Error
+          content: {}
+
   '/api/films/public/assignments':
     post:
       tags:
@@ -862,46 +1013,46 @@ components:
       - title
       - owner
       - private
-    Review:
-      description: schema for Review data structures
-      type: object
-      additionalProperties: false
-      properties:
-        $schema:
-          type: string
-          description: path to the JSON Schema to use for the validation of the JSON data structure
-            describing the film
-        filmId:
-          type: integer
-          description: unique identifier of the film for which a review invitation has been
-            issued
-        reviewerId:
-          type: integer
-          description: unique identifier of the user who has received the review invitation
-        completed:
-          type: boolean
-          description: true if the review has been completed, false
-            otherwise
-          default: 'false'
-        reviewDate:
-          type: string
-          format: date
-          description: the date when the review has been completed by the invited user
-        rating:
-          type: integer
-          description: the rating the reviewer has given to the film
-          minimum: 1
-          maximum: 10
-        review:
-          type: string
-          description: a textual description of the review
-          maxLength: 1000
-        self: 
-          type: string
-          format: uri
-      required:
-      - filmId
-      - reviewerId
+    # Review:
+    #   description: schema for Review data structures
+    #   type: object
+    #   additionalProperties: false
+    #   properties:
+    #     $schema:
+    #       type: string
+    #       description: path to the JSON Schema to use for the validation of the JSON data structure
+    #         describing the film
+    #     filmId:
+    #       type: integer
+    #       description: unique identifier of the film for which a review invitation has been
+    #         issued
+    #     reviewerId:
+    #       type: integer
+    #       description: unique identifier of the user who has received the review invitation
+    #     completed:
+    #       type: boolean
+    #       description: true if the review has been completed, false
+    #         otherwise
+    #       default: 'false'
+    #     reviewDate:
+    #       type: string
+    #       format: date
+    #       description: the date when the review has been completed by the invited user
+    #     rating:
+    #       type: integer
+    #       description: the rating the reviewer has given to the film
+    #       minimum: 1
+    #       maximum: 10
+    #     review:
+    #       type: string
+    #       description: a textual description of the review
+    #       maxLength: 1000
+    #     self: 
+    #       type: string
+    #       format: uri
+    #   required:
+    #   - filmId
+    #   - reviewerId
   securitySchemes:
     cookieAuth:
       description: JWT to identify the authenticated user.

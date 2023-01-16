@@ -1,75 +1,99 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id" : "http://www.my-schema.com/review_schema.json",
-  "title": "Review",
-  "description": "JSON Schema for Review data structures",
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "$schema": {
-      "type": "string",
-      "description": "path to the JSON Schema to use for the validation of the data structure"
-    },
-    "filmId": {
-      "type": "integer",
-      "description": "unique identifier of the film for which this review invitation has been issued"
-    },
-    "reviewerId": {
-      "type": "integer",
-      "description": "unique identifier of the the user who has received this review invitation"
-    },
-    "completed": {
-      "type": "boolean",
-      "description": "true if the review has been completed, false otherwise",
-      "default": "false"
-    },  
-    "reviewDate": {
-      "type": "string",
-      "format": "date",
-      "description": "the date when the review has been completed by the invited user"
-    },
-    "rating": {
-      "type": "integer",
-      "description": "the rating the reviewer has given to the film",
-      "minimum": 1,
-      "maximum": 10
-    },
-    "review": {
-      "type": "string",
-      "description": "a textual description of the review",
-      "maxLength": 1000
-    }
-  },
-  "required": ["filmId", "reviewerId"],
-  "dependencies": {
-    "completed": {
-      "oneOf": [
-        {
-          "properties": {
-            "completed": {
-              "const": false
-            }
-          },
-          "allOf" : [   
-            {"not" : { "required" : ["reviewDate"] } },  
-            {"not" : { "required" : ["rating"] } },
-            {"not" : { "required" : ["review"] } }
-          ]
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id" : "http://www.my-schema.com/review_schema.json",
+    "title": "Review",
+    "description": "JSON Schema that represents a newly created Review",
+    "type": "object",
+    "additionalProperties": false,
+    "definitions": {
+      "$schema": {
+        "type": "string",
+        "description": "path to the JSON Schema to use for the validation of the data structure"
+      },
+      "filmId": {
+        "type": "integer",
+        "description": "unique identifier of the film for which this review invitation has been issued"
+      },
+      "reviewId": {
+        "type": "integer",
+        "description": "unique identifier of the review"
+      },
+      "review_type": {
+        "type": "string",
+        "enum": ["single", "coop"]
+      },
+      "reviewers": {
+        "type": "array",
+        "items": {
+          "type": "integer"
         },
-        {
-          "properties": {
-            "completed": {
-              "const": true  
-            }
-          },
-          "required": [
-            "reviewDate", "rating", "review"
-          ]
-        }
-      ]
+        "uniqueItems": true,
+        "minItems": 1
+      },
+      "completed": {
+        "type": "boolean",
+        "description": "true if the review has been completed, false otherwise",
+        "default": "false"
+      },  
+      "reviewDate": {
+        "type": "string",
+        "format": "date",
+        "description": "the date when the review has been completed by the invited user"
+      },
+      "rating": {
+        "type": "integer",
+        "description": "the rating the reviewer has given to the film",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "review": {
+        "type": "string",
+        "description": "a textual description of the review",
+        "maxLength": 1000
+      }
     },
-    "reviewDate": ["completed"],
-    "rating": ["completed"],
-    "review": ["completed"]
+    "properties": {
+      "$schema": {"$ref": "#/definitions/$schema"},
+      "filmId": {"$ref": "#/definitions/filmId"},
+      "reviewId": {"$ref": "#/definitions/reviewId"},
+      "review_type": {"$ref": "#/definitions/review_type"},
+      "reviewers": {"$ref": "#/definitions/reviewers"},
+      "completed": {"$ref": "#/definitions/completed"},
+      "reviewDate": {"$ref": "#/definitions/reviewDate"},
+      "rating": {"$ref": "#/definitions/rating"},
+      "review": {"$ref": "#/definitions/review"}
+    },
+    "required": ["filmId", "reviewId", "reviewers"],
+    "dependencies": {
+      "completed": {
+        "oneOf": [
+          {
+            "properties": {
+              "completed": {
+                "const": false
+              }
+            },
+            "allOf" : [   
+              {"not" : { "required" : ["reviewDate"] } },  
+              {"not" : { "required" : ["rating"] } },
+              {"not" : { "required" : ["review"] } }
+            ]
+          },
+          {
+            "properties": {
+              "completed": {
+                "const": true  
+              }
+            },
+            "required": [
+              "reviewDate", "rating", "review"
+            ]
+          }
+        ]
+      },
+      "reviewDate": ["completed"],
+      "rating": ["completed"],
+      "review": ["completed"]
+    }
   }
-}
+  

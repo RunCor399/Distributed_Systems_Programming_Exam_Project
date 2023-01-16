@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id" : "http://www.my-schema.com/draft_schema.json",
+    "title": "Draft",
+    "description": "JSON Schema that represents a Review Draft",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "path to the JSON Schema to use for the validation of the data structure"
+        },
+        "draftId": {
+            "type": "integer",
+            "description": "unique identifier of the draft"
+        },
+        "filmId": {"$ref": "./review_schema.json#/definitions/filmId"},
+        "reviewId": {"$ref": "./review_schema.json#/definitions/reviewId"},
+        "rating": {"$ref": "./review_schema.json#/definitions/rating"},
+        "review": {"$ref": "./review_schema.json#/definitions/review"},
+        "author": {
+            "type": "integer",
+            "description": "unique identifier of the user that created this draft"
+        },
+        "status": {
+            "type": "boolean",
+            "description": "true if the draft is open, false otherwise",
+            "default": "true"
+        }
+    }
+}

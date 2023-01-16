@@ -1,0 +1,10 @@
+{
+    "allOf": [
+      { "$ref": "./draft_schema.json" },
+      {
+        "not": {
+          "required": ["draftId"]
+        }
+      }
+    ]
+}
