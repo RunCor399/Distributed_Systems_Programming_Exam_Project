@@ -1,0 +1,7 @@
+{
+    "$schema": "../reviewers_schema.json",
+    "reviewers": [
+                    "http://film-library.com/api/users/1",
+                    "http://film-library.com/api/users/2"
+                ]
+}

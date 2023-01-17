@@ -1,0 +1,7 @@
+{
+    "$schema": "../review_update_schema.json",
+    "completed": true,
+    "reviewDate": "2022-02-22",
+    "rating": 7,
+    "review": "Interessante."
+}

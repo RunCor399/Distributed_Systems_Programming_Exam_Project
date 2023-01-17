@@ -1,0 +1,19 @@
+[
+    {
+        "$schema": "../review_response_schema_v2.json",
+        "filmId": 1,
+        "reviewId": 1,
+        "reviewers": ["http://film-library.com/api/users/1", "http://film-library.com/api/users/2"],
+        "completed": true,
+        "reviewDate": "2022-02-22",
+        "rating": 4,
+        "review": "Non molto interessante."
+    },
+    {
+        "$schema": "./review_response_schema_v2.json",
+        "filmId": 1,
+        "reviewId": 1,
+        "reviewers": ["http://film-library.com/api/users/1", "http://film-library.com/api/users/2"],
+        "completed": false
+    }
+]

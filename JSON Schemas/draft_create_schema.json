@@ -1,9 +1,15 @@
 {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id" : "http://www.my-schema.com/draft_create_schema.json",
+    "title": "Draft Create",
+    "description": "JSON Schema that represents a review Draft when is created",
+    "type": "object",
+    "additionalProperties": false,
     "allOf": [
       { "$ref": "./draft_schema.json" },
       {
         "not": {
-          "required": ["draftId"]
+          "required": ["draftId", "votes"]
         }
       }
     ]

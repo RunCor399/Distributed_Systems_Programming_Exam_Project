@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id" : "http://www.my-schema.com/review_schema.json",
-    "title": "Review",
-    "description": "JSON Schema that represents a Review",
+    "title": "Review Response",
+    "description": "JSON Schema that represents reviews as they are returned from the backend",
     "type": "object",
     "additionalProperties": false,
     "definitions": {
@@ -18,10 +18,16 @@
         "type": "integer",
         "description": "unique identifier of the review"
       },
+      "review_type": {
+        "type": "string",
+        "enum": ["single", "coop"]
+      },
       "reviewers": {
         "type": "array",
         "items": {
-          "type": "integer"
+          "type": "string",
+          "format": "uri",
+          "default": "/api/users/1"
         },
         "uniqueItems": true,
         "minItems": 1
@@ -52,6 +58,7 @@
       "$schema": {"$ref": "#/definitions/$schema"},
       "filmId": {"$ref": "#/definitions/filmId"},
       "reviewId": {"$ref": "#/definitions/reviewId"},
+      "review_type": {"$ref": "#/definitions/review_type"},
       "reviewers": {"$ref": "#/definitions/reviewers"},
       "completed": {"$ref": "#/definitions/completed"},
       "reviewDate": {"$ref": "#/definitions/reviewDate"},

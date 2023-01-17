@@ -1,0 +1,20 @@
+{
+    "$schema": "../draft_schema.json",
+    "draftId": 1,
+    "filmId": 2,
+    "reviewId": 1,
+    "rating": 7,
+    "review": "Non molto interessante.",
+    "author": "http://film-library.com/api/users/1",
+    "status": true,
+    "votes": [
+                {
+                    "userId":"http://film-library/api/users/2",
+                    "vote": true
+                },
+                {
+                    "userId":"http://film-library/api/users/3",
+                    "vote": false
+                }
+            ]
+  }

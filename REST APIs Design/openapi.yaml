@@ -28,10 +28,8 @@ tags:
     description: the public film with ID filmId
   - name: 'films/public/{filmId}/reviews'
     description: the reviews issued for the public film with ID filmId
-  - name: 'films/public/{filmId}/reviews/{reviewerId}'
+  - name: 'films/public/{filmId}/reviews/{reviewId}'
     description: the review issued to the user with ID reviewerId for the public film with ID filmId
-  - name: films/public/assignments
-    description: the assignments of review invitations to users
   - name: users
     description: the set of all the users
   - name: users/authenticator
@@ -53,7 +51,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Film'
+              $ref: '../JSON Schemas/film_schema.json'
         required: true
       responses:
         '201':
@@ -61,7 +59,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/Film'
+                  $ref: '../JSON Schemas/film_schema.json'
         '400':
           description: Bad Request
           content: {}
@@ -105,7 +103,7 @@ paths:
                   films:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Film'
+                      $ref: '../JSON Schemas/film_schema.json'
                   next:
                     type: string
                     format: uri
@@ -138,7 +136,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Film'
+                $ref: '../JSON Schemas/film_schema.json'
         '401':
           description: Unauthorized
           content: {}
@@ -172,7 +170,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Film'
+              $ref: '../JSON Schemas/film_schema.json'
         required: true
       responses:
         '204':
@@ -260,7 +258,7 @@ paths:
                   films:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Film'
+                      $ref: '../JSON Schemas/film_schema.json'
                   next:
                     type: string
                     format: uri
@@ -301,7 +299,7 @@ paths:
                   films:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Film'
+                      $ref: '../JSON Schemas/film_schema.json'
                   next:
                     type: string
                     format: uri
@@ -333,7 +331,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Film'
+                $ref: '../JSON Schemas/film_schema.json'
         '404':
           description: Not Found
           content: {}
@@ -361,7 +359,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Film'
+              $ref: '../JSON Schemas/film_schema.json'
         required: true
       responses:
         '204':
@@ -441,7 +439,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '../JSON Schemas/review_schema.json'
+                $ref: '../JSON Schemas/review_create_schema.json'
         required: true
       responses:
         '201':
@@ -451,7 +449,7 @@ paths:
               schema:
                   type: array
                   items:
-                    $ref: '../JSON Schemas/review_schema.json'
+                    $ref: '../JSON Schemas/review_create_schema.json'
         '400':
           description: Bad Request
           content: {}
@@ -517,7 +515,7 @@ paths:
                       reviews:
                         type: array
                         items:
-                          $ref: '../JSON Schemas/review_response_schema.json'
+                          $ref: '../JSON Schemas/review_response_schema_v2.json'
                       next:
                         type: string
                         format: uri
@@ -556,7 +554,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../JSON Schemas/review_response_schema.json'
+                $ref: '../JSON Schemas/review_response_schema_v2.json'
         '404':
           description: Not Found
           content: {}
@@ -650,7 +648,6 @@ paths:
         '500':
           description: Internal Server Error
           content: {}
-
   '/api/films/public/{filmId}/reviews/{reviewId}/drafts':
     get:
       tags:
@@ -709,7 +706,65 @@ paths:
         '500':
           description: Internal Server Error
           content: {}
-
+    post:
+      tags: 
+        - 'films/public/{filmId}/reviews/{reviewId}/drafts'
+      security:
+        - cookieAuth: []
+      summary: Create a Draft for a specific review with ID reviewId
+      description: A new draft is created for the review with ID reviewId. The author of the draft is specified in the body. This operation can only be performed for cooperative reviews by an invited reviewer.
+      operationId: createReviewDraft
+      parameters:
+        - name: filmId
+          in: path
+          description: ID of the film
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: reviewId
+          in: path
+          description: ID of the review
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: the new review draft
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../JSON Schemas/draft_create_schema.json'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                  type: array
+                  items:
+                    $ref: '../JSON Schemas/draft_schema.json'
+        '400':
+          description: Bad Request
+          content: {}
+        '401':
+          description: Unauthorized
+          content: {}
+        '403':
+          description: Forbidden
+          content: {}
+        '404':
+          description: Not Found
+          content: {}
+        '409':
+          description: Conflict (e.g., wrong film id or unknown reviewer id)
+          content: {}
+        '500':
+          description: Internal Server Error
+          content: {}
   '/api/films/public/{filmId}/reviews/{reviewId}/drafts/{draftId}':
     get:
       tags:
@@ -753,14 +808,68 @@ paths:
         '500':
           description: Internal Server Error
           content: {}
-
+    put:
+      tags:
+        - 'films/public/{filmId}/reviews/{reviewId}/drafts/{draftId}'
+      security:
+        - cookieAuth: []
+      summary: Cast an agreement or disagreement for a Draft
+      description: The Draft with ID draftId is voted by a user. This operation only allows setting the "vote" property to the "true" or "false" depending on the vote expressed by the user. This operation can be performed only by one of the invited reviewers.
+      operationId: voteDraft
+      parameters:
+        - name: filmId
+          in: path
+          description: ID of the film whose review must be completed
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: reviewId
+          in: path
+          description: ID of the review
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: draftId
+          in: path
+          description: ID of the review
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: The properties of the Review object that must be updated
+        content:
+          application/json:
+            schema:
+              $ref: '../JSON Schemas/draft_update_schema.json'
+      responses:
+        '204':
+          description: No Content
+          content: {}
+        '400':
+          description: Bad Request
+          content: {}
+        '401':
+          description: Unauthorized
+          content: {}
+        '403':
+          description: Forbidden
+          content: {}
+        '404':
+          description: Not Found
+          content: {}
+        '500':
+          description: Internal Server Error
+          content: {}
   '/api/films/public/{filmId}/reviews/{reviewId}/reviewers':
     get:
       tags:
         - 'films/public/{filmId}/reviews/{reviewId}/reviewers'
       summary: Retrieve all the reviewers of a specific review with ID reviewId
       description: >-
-        The reviewers of a review with ID reviewId are retrieved, This operation can only be formed by users that have been invited to review this film?. 
+        The reviewers of a review with ID reviewId are retrieved, This operation can only be performed by users that have been invited to review this film?. 
       operationId: getAllReviewers
       parameters:
         - name: filmId
@@ -799,10 +908,13 @@ paths:
                         type: integer
                       totalItems:
                         type: integer
-                      reviews:
+                      reviewers:
                         type: array
                         items:
-                          $ref: '../JSON Schemas/reviewers_schema.json'
+                          type: string
+                          format: uri
+                          default: /api/users/1
+
                       next:
                         type: string
                         format: uri
@@ -813,36 +925,36 @@ paths:
           description: Internal Server Error
           content: {}
 
-  '/api/films/public/assignments':
-    post:
-      tags:
-        - films/public/assignments
-      security:
-        - cookieAuth: []
-      summary: Assign automatically review invitations for the unassigned public films owned by the authenticated user in a balanced manner
-      description: >-
-        The films owned by the authenticated user who performed the request and that are not assigned to any user for review, are automatically assigned to the
-        users of the service in a balanced manner. Only authenticated users can make this request.
-      operationId: assignReviewBalanced
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    filmId:
-                     type: integer
-                    reviewerId:
-                      type: integer
-        '401':
-          description: Unauthorized
-          content: {}
-        '500':
-          description: Internal Server Error
-          content: {}
+  # '/api/films/public/assignments':
+  #   post:
+  #     tags:
+  #       - films/public/assignments
+  #     security:
+  #       - cookieAuth: []
+  #     summary: Assign automatically review invitations for the unassigned public films owned by the authenticated user in a balanced manner
+  #     description: >-
+  #       The films owned by the authenticated user who performed the request and that are not assigned to any user for review, are automatically assigned to the
+  #       users of the service in a balanced manner. Only authenticated users can make this request.
+  #     operationId: assignReviewBalanced
+  #     responses:
+  #       '200':
+  #         description: Successful operation
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 properties:
+  #                   filmId:
+  #                    type: integer
+  #                   reviewerId:
+  #                     type: integer
+  #       '401':
+  #         description: Unauthorized
+  #         content: {}
+  #       '500':
+  #         description: Internal Server Error
+  #         content: {}
   '/api/users':
     get:
       tags:
@@ -862,7 +974,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '../JSON Schemas/user_public_schema.json'
         '401':
           description: Unauthorized
           content: {}
@@ -894,7 +1006,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '../JSON Schemas/user_public_schema.json'
         '401':
           description: Unauthorized
           content: {}
@@ -923,7 +1035,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '../JSON Schemas/user_schema.json'
         required: true
       responses:
         '204':
@@ -940,79 +1052,79 @@ paths:
           description: Unauthorized
           content: {}
 components:
-  schemas:
-    User: 
-      description: schema for User data structures
-      type: object
-      additionalProperties: false
-      properties:
-        $schema:
-          type: string
-          description: path to the JSON Schema to use for the validation of the JSON data structure
-            describing the user
-        id:
-          type: integer
-          description: unique identifier for the user
-        email:
-          type: string
-          format: email
-          description: user email
-        name:
-          type: string
-          description: username
-        password:
-          type: string
-          minLength: 6
-          maxLength: 20
-          description: user password
-        self: 
-          type: string
-          format: uri
-      required:
-      - email
-    Film:
-      description: schema for Film data structures
-      type: object
-      additionalProperties: false
-      properties:
-        $schema:
-          type: string
-          description: path to the JSON Schema to use for the validation of the JSON data structure
-            describing the film
-        id:
-          type: integer
-          description: unique identifier for the film data structure
-        title:
-          type: string
-          description: textual title of the film
-        owner:
-          type: integer
-          description: unique identifier of the the film data structure owner
-        private:
-          type: boolean
-          description: true if only the owner of the film data structure can access it, false otherwise
-          default: 'true'
-        watchDate:
-          type: string
-          format: date
-          description: the date when the film was watched by the owner
-        rating:
-          type: integer
-          description: the rating the owner has given to the film
-          minimum: 1
-          maximum: 10
-        favorite:
-          type: boolean
-          description: 'true if the film is among the favourite
-            ones of the owner, false otherwise '
-          default: 'false'
-        self: 
-          type: string
-          format: uri
-      required:
-      - title
-      - owner
-      - private
+  # schemas:
+    # User: 
+    #   description: schema for User data structures
+    #   type: object
+    #   additionalProperties: false
+    #   properties:
+    #     $schema:
+    #       type: string
+    #       description: path to the JSON Schema to use for the validation of the JSON data structure
+    #         describing the user
+    #     id:
+    #       type: integer
+    #       description: unique identifier for the user
+    #     email:
+    #       type: string
+    #       format: email
+    #       description: user email
+    #     name:
+    #       type: string
+    #       description: username
+    #     password:
+    #       type: string
+    #       minLength: 6
+    #       maxLength: 20
+    #       description: user password
+    #     self: 
+    #       type: string
+    #       format: uri
+    #   required:
+    #   - email
+    # Film:
+    #   description: schema for Film data structures
+    #   type: object
+    #   additionalProperties: false
+    #   properties:
+    #     $schema:
+    #       type: string
+    #       description: path to the JSON Schema to use for the validation of the JSON data structure
+    #         describing the film
+    #     id:
+    #       type: integer
+    #       description: unique identifier for the film data structure
+    #     title:
+    #       type: string
+    #       description: textual title of the film
+    #     owner:
+    #       type: integer
+    #       description: unique identifier of the the film data structure owner
+    #     private:
+    #       type: boolean
+    #       description: true if only the owner of the film data structure can access it, false otherwise
+    #       default: 'true'
+    #     watchDate:
+    #       type: string
+    #       format: date
+    #       description: the date when the film was watched by the owner
+    #     rating:
+    #       type: integer
+    #       description: the rating the owner has given to the film
+    #       minimum: 1
+    #       maximum: 10
+    #     favorite:
+    #       type: boolean
+    #       description: 'true if the film is among the favourite
+    #         ones of the owner, false otherwise '
+    #       default: 'false'
+    #     self: 
+    #       type: string
+    #       format: uri
+    #   required:
+    #   - title
+    #   - owner
+    #   - private
     # Review:
     #   description: schema for Review data structures
     #   type: object

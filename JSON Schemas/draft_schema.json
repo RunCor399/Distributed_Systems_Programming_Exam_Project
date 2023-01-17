@@ -18,14 +18,31 @@
         "reviewId": {"$ref": "./review_schema.json#/definitions/reviewId"},
         "rating": {"$ref": "./review_schema.json#/definitions/rating"},
         "review": {"$ref": "./review_schema.json#/definitions/review"},
+        
         "author": {
-            "type": "integer",
-            "description": "unique identifier of the user that created this draft"
+            "oneOf": [
+                {
+                    "type": "integer",
+                    "description": "unique identifier of the user that created this draft"
+                },
+                {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "uri to the user that created the draft"
+                }
+            ]     
         },
         "status": {
             "type": "boolean",
             "description": "true if the draft is open, false otherwise",
             "default": "true"
+        },
+        "votes": {
+            "type": "array",
+            "items": {
+                "$ref": "./vote_schema.json"
+              },
+              "uniqueItems": true
         }
     }
 }

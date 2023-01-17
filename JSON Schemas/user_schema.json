@@ -30,5 +30,5 @@
       "description": "user password"
     }
   },
-  "required": ["id", "email"]
+  "required": ["email", "password"]
 }
