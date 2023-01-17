@@ -282,6 +282,13 @@ paths:
           schema:
             type: integer
           description: 'The id of the requested page (if absent, the first page is returned)'
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+            enum: ["single", "coop"]
+          description: 'The type of review for which the user has been invited'
       responses:
         '200':
           description: Successful operation
