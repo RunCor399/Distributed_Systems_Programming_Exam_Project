@@ -441,13 +441,23 @@ paths:
             format: int64
       requestBody:
         description: the new film reviews, including the users to whom they are issued
+        required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '../JSON Schemas/review_create_schema.json'
-        required: true
+              type: object
+              properties:
+                filmId:
+                  type: integer
+                review_type:
+                  type: string
+                  default: "coop"
+                reviewers:
+                  type: array
+                  items:
+                    type: integer
+                    minItems: 1
+                    default: 1  
       responses:
         '201':
           description: Created

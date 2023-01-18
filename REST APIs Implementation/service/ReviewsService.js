@@ -2,6 +2,7 @@
 
 const Review = require('../components/review');
 const User = require('../components/user');
+var usersService = require('./UsersService');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
 
@@ -135,10 +136,14 @@ var constants = require('../utils/constants.js');
  * - no response expected for this operation
  * 
  **/
- exports.issueFilmReview = function(invitations,owner) {
+ exports.issueFilmReview = function(body, owner) {
   return new Promise((resolve, reject) => {
+      const filmId = body.filmId;
+      const reviewers = body.reviewers;
+      const review_type = body.review_type;
+
       const sql1 = "SELECT owner, private FROM films WHERE id = ?";
-      db.all(sql1, [invitations[0].filmId], (err, rows) => {
+      db.all(sql1, [filmId], (err, rows) => {
           if (err){
                 reject(err);
           }
@@ -151,57 +156,261 @@ var constants = require('../utils/constants.js');
               reject(404);
           }
           else {
-            var sql2 = 'SELECT * FROM users' ;
-            var invitedUsers = [];
-            for (var i = 0; i < invitations.length; i++) {
-                console.log(invitations[i]);
-                if(i == 0) sql2 += ' WHERE id = ?';
-                else sql2 += ' OR id = ?'
-                invitedUsers[i] = invitations[i].reviewerId;
-            }
-            db.all(sql2, invitedUsers, async function(err, rows) {
-                if (err) {
-                    reject(err);
-                } 
-                else if (rows.length !== invitations.length){
-                    reject(409);
-                }
-                else {
-                    const sql3 = 'INSERT INTO reviews(filmId, reviewerId, completed) VALUES(?,?,0)';
-                    var finalResult = [];
-                    for (var i = 0; i < invitations.length; i++) {
-                        var singleResult;
-                        try {
-                            singleResult = await issueSingleReview(sql3, invitations[i].filmId, invitations[i].reviewerId);
-                            finalResult[i] = singleResult;
-                        } catch (error) {
-                            reject ('Error in the creation of the review data structure');
-                            break;
-                        }
+            let reviewersExist;
+            checkReviewersExistance(reviewers).then((reviewersExist) => {
+                if(reviewersExist){
+                    console.log("h");
+                    if (review_type === "coop" && reviewers.length > 1){
+                        let reviewId;
+    
+                        //cooperative review, no further checks
+                        beginTransaction().then(() => {
+                            issueCooperativeReview(filmId, reviewers).then((result) => {
+                                reviewId = result;
+                                endTransaction().then(() => {
+                                    let createdReview = new Review(filmId, reviewId, reviewers, false);
+                                    resolve(createdReview);
+                                }).catch(() => {
+                                    reject('500');
+                                })
+                            }).catch(() => {
+                                reject('coop review couldnt be sent');
+                            })
+                        }).catch(() => {
+                            reject('500');
+                        })
+                        
                     }
-
-                    if(finalResult.length !== 0){
-                        resolve(finalResult);
-                    }        
+                    else{
+                        //single review, check if user is already reviewing this film
+                        let alreadyIssued = [];
+                        let toBeIssued = [];
+                        let reviewId;
+    
+                        //Evaluating if some user has already been invited to review this film
+                        const promises = [];
+                        for(const id of reviewers){
+                            promises.push(checkSingleUserReviewing(id, filmId).then((result) => {
+                                if(result){
+                                    toBeIssued.push(id);
+                                }
+                                else{
+                                    alreadyIssued.push(id);
+                                }
+                            }).catch((err) => {
+                                reject(err);
+                            }))
+                        }
+    
+                        Promise.all(promises).then(() => {
+                            //add entry in reviewers for each toBeIssued
+                            if(toBeIssued.length > 0){
+                                beginTransaction().then(() => {
+                                    issueSingleReview(filmId).then((result) => {
+                                        reviewId = result;
+    
+                                        for(const userId of toBeIssued){
+                                            addReviewerToReview(reviewId, userId).catch((err) => {
+                                                abortTransaction();
+                                                reject(err);
+                                            });
+                                        }
+    
+                                        endTransaction().then(() => {
+                                            //rn returning only reviewers to which review was actually assigned
+                                            let createdReview = new Review(filmId, reviewId, toBeIssued, false);
+                                            resolve(createdReview);
+                                        }).catch(() => {
+                                            reject('500');
+                                        });
+                                    }).catch(() => {
+                                        reject('couldnt issue single review');
+                                    })
+                                }).catch(() => {
+                                    reject('500');
+                                })
+                            }
+                            else{
+                                // no review assigned
+                                reject(410);
+                            }
+                        })
+                    }
                 }
-            }); 
-          }
+                else{
+                    reject(409)
+                }
+            });    
+        }
       });
   });
 }
 
-const issueSingleReview = function(sql3, filmId, reviewerId){
+//Checks if a user that was invited to "single review" a film, was already invited to review that film
+const checkSingleUserReviewing = function(userId, filmId){
     return new Promise((resolve, reject) => {
-        db.run(sql3, [filmId, reviewerId], function(err) {
-            if (err) {
-                reject('500');
-            } else {
-                var createdReview = new Review(filmId, reviewerId, false);
-                resolve(createdReview);
+        const sql = "SELECT R.id FROM reviews R, reviewers RW WHERE R.filmId = ? AND RW.userId = ? AND R.type = 'single' AND R.id = RW.reviewId";
+        db.get(sql, [filmId, userId], (err, rows) => {
+            if (err){
+              reject(err);
+            }
+            else if (rows !== undefined){
+                // User already associated with single review of this film
+                console.log("false");
+                resolve(false);
+            }
+            else{
+                resolve(true);
+            }
+        })
+    })
+}
+
+const beginTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("BEGIN;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
             }
         });
     })
 }
+
+const endTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("COMMIT;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
+            }
+        });
+    })
+}
+
+const abortTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("ROLLBACK;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
+            }
+        });
+    })
+}
+
+//Add entries in reviewers table
+const addReviewerToReview = function(reviewId, userId){
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO reviewers(reviewId, userId) VALUES(?,?);`;
+
+        db.run(sql, [reviewId, userId], (err) => {
+            if(err){
+                console.log(err);
+                reject('500');
+            }
+            else{
+                resolve(true);
+            }
+        });
+    }) 
+}
+
+// Issue single review
+// It is checked that any of the users specified as reviewers have been already assigned a review for the given film
+// If at least one of them was already been assigned, the review invitation will only be sent to the others
+// If all of them were already invited, no review invitation is sent
+const issueSingleReview = function(filmId){
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO reviews(filmId, completed, type) VALUES(?,?,?);`;
+        db.run(sql, [filmId, false, 'single'], function(err) {
+            if (err) {
+                reject('500');
+            } 
+            else {
+                db.get("SELECT last_insert_rowid() as lastID", (err, row) => {
+                    if(err){
+                        console.log(err);
+                        reject(err);
+                    }
+                    else{
+                        const lastReviewId = row.lastID;
+                        resolve(lastReviewId);
+                    }
+                });
+            }
+        });
+    });
+}
+
+
+//What happens if a coop review is issued to only one user? => demoted to single review
+// Issue a review to multiple users 
+const issueCooperativeReview = function(filmId, reviewers){
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO reviews(filmId, completed, type) VALUES(?,?,?);`;
+
+        db.run(sql, [filmId, false, 'coop'], (err) => {
+            if(err){
+                console.log(err);
+                reject('500');
+            }
+            else{
+                db.get("SELECT last_insert_rowid() as lastID", (err, row) => {
+                    if(err){
+                        console.log(err);
+                        reject(err);
+                    }
+                    else{
+                        const lastReviewId = row.lastID;
+                        const sql_reviewers = `INSERT INTO reviewers(reviewId, userId) VALUES(?,?);`;
+
+                        for(const reviewer of reviewers){
+                            db.run(sql_reviewers, [lastReviewId, reviewer], (err) => {
+                                if(err){
+                                    console.log(err);
+                                    reject(err);
+                                }
+                            });
+                        }
+
+                        resolve(lastReviewId);
+                    }
+                });
+            }
+        });
+    })
+}
+
+const checkReviewersExistance = function(reviewers){
+    return new Promise((resolve, reject) => {
+        let promises = [];
+        let flag = true;
+
+        for(const userId of reviewers){
+            promises.push(usersService.getUserById(userId).then((result) => {
+                if(result === undefined){
+                    flag = false;
+                }
+            }))
+        }
+        
+        Promise.all(promises).then(() => {
+            resolve(flag);
+        });
+    }) 
+}
+
+
 
 /**
  * Complete and update a review

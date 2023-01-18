@@ -5,7 +5,7 @@
     "description": "JSON Schema that represents reviews as they are returned from the backend",
     "type": "object",
     "additionalProperties": false,
-    "definitions": {
+    "properties": {
       "$schema": {
         "type": "string",
         "description": "path to the JSON Schema to use for the validation of the data structure"
@@ -53,17 +53,6 @@
         "description": "a textual description of the review",
         "maxLength": 1000
       }
-    },
-    "properties": {
-      "$schema": {"$ref": "#/definitions/$schema"},
-      "filmId": {"$ref": "#/definitions/filmId"},
-      "reviewId": {"$ref": "#/definitions/reviewId"},
-      "review_type": {"$ref": "#/definitions/review_type"},
-      "reviewers": {"$ref": "#/definitions/reviewers"},
-      "completed": {"$ref": "#/definitions/completed"},
-      "reviewDate": {"$ref": "#/definitions/reviewDate"},
-      "rating": {"$ref": "#/definitions/rating"},
-      "review": {"$ref": "#/definitions/review"}
     },
     "required": ["filmId", "reviewId", "reviewers"],
     "dependencies": {

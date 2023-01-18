@@ -90,13 +90,8 @@ module.exports.deleteSingleReview = function deleteSingleReview (req, res, next)
 };
 
 module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
-  var differentFilm = false;
-  for(var i = 0; i < req.body.length; i++){
-    if(req.params.filmId != req.body[i].filmId){
-      differentFilm = true;
-    }
-  }
-  if(differentFilm){
+  console.log(req.params.filmId, req.body.filmId)
+  if(req.params.filmId != req.body.filmId){
     utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The filmId field of the review object is different from the filmdId path parameter.' }], }, 409);
   }
   else {
@@ -112,7 +107,10 @@ module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
           utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The public film does not exist.' }], }, 404);
       }
       else if (response == 409){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user with ID reviewerId does not exist.' }], }, 404);
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user with ID reviewerId does not exist.' }], }, 409);
+      }
+      else if (response == 410){ //status code to be modified 
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is already associated with a single review for this film' }], }, 410);
       }
       else {
           utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response }],}, 500);

@@ -13,12 +13,10 @@
         "reviewers": {
             "type": "array",
             "items": {
-                "type": "string",
-                "format": "uri",
-                "default": "/api/users/1"
-              },
-              "uniqueItems": true,
-              "minItems": 1
+                "type": "integer",
+            },
+            "uniqueItems": true,
+            "minItems": 1
         }
     }
 }

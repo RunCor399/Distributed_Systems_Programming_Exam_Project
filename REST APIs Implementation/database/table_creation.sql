@@ -1,23 +1,25 @@
-DROP TABLE reviews;
+
 
 CREATE TABLE reviews (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     filmId INTEGER NOT NULL,
     completed BOOLEAN NOT NULL,
     reviewDate DATE,
     rating INTEGER CHECK (rating BETWEEN 1 AND 10),
     review TEXT,
     type TEXT NOT NULL CHECK (type IN ('single', 'coop')),
+    PRIMARY KEY (id AUTOINCREMENT),
     CONSTRAINT FK_FILM_ID FOREIGN KEY(filmId) REFERENCES films(id)
 );
 
 CREATE TABLE drafts (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     reviewId INTEGER NOT NULL,
     userId INTEGER NOT NULL,
     rating INTEGER CHECK (rating BETWEEN 1 AND 10),
     review TEXT,
     status BOOLEAN NOT NULL,
+    PRIMARY KEY (id AUTOINCREMENT),
     CONSTRAINT FK_REVIEW_ID FOREIGN KEY(reviewId) REFERENCES reviews(id),
     CONSTRAINT FK_USER_ID FOREIGN KEY(userId) REFERENCES users(id)
 );
