@@ -35,7 +35,7 @@ module.exports.getFilmReviews = function getFilmReviews (req, res, next) {
                         currentPage: pageNo,
                         totalItems: numOfReviews,
                         reviews: response,
-                        next: "/api/films/public/" + req.params.taskId +"?pageNo=" + next
+                        next: "/api/films/public/"+req.params.filmId+"/reviews?pageNo=" + next
                     });
                 }
         })

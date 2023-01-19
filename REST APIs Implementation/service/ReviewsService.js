@@ -18,18 +18,48 @@ var constants = require('../utils/constants.js');
  **/
  exports.getFilmReviews = function(req) {
   return new Promise((resolve, reject) => {
-      var sql = "SELECT r.filmId as fid, r.reviewerId as rid, completed, reviewDate, rating, review, c.total_rows FROM reviews r, (SELECT count(*) total_rows FROM reviews l WHERE l.filmId = ? ) c WHERE  r.filmId = ? ";
+      var sql = "SELECT R.filmId AS filmId, R.id AS reviewId, completed, reviewDate, rating, review, type, c.total_rows FROM reviews R, (SELECT count(*) total_rows FROM reviews L WHERE L.filmId = ? ) C WHERE  R.filmId = ? ";
       var params = getPagination(req);
       if (params.length != 2) sql = sql + " LIMIT ?,?";
       db.all(sql, params, (err, rows) => {
           if (err) {
-              reject(err);
+                console.log(err);
+                reject(err);
           } else {
-              let reviews = rows.map((row) => createReview(row));
-              resolve(reviews);
+                //console.log(rows);
+                //let reviews = rows.map((row) => createReview(row));
+
+                let complete_reviews = []
+                let promises = [];
+                for(const review of rows){
+                    promises.push(getFilmReviewers(review.reviewId).then((reviewers) => {
+                        let complete_review = createReview(review, reviewers);
+                        complete_reviews.push(complete_review);
+                        console.log(reviewers);
+                    }));
+                }
+
+                Promise.all(promises).then(() => {
+                    resolve(complete_reviews)
+                });
           }
       });
   });
+}
+
+const getFilmReviewers = function(reviewId){
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT userId FROM reviewers WHERE reviewId = ?";
+
+        db.all(sql, [reviewId], (err, rows) => {
+            if(err){
+                reject(err);
+            }
+            else{
+                resolve(rows)
+            }
+        });
+    });
 }
 
 /**
@@ -66,17 +96,18 @@ var constants = require('../utils/constants.js');
  * - the requested review
  * 
  **/
- exports.getSingleReview = function(filmId, reviewerId) {
+ exports.getSingleReview = function(filmId, reviewId) {
   return new Promise((resolve, reject) => {
-      const sql = "SELECT filmId as fid, reviewerId as rid, completed, reviewDate, rating, review FROM reviews WHERE filmId = ? AND reviewerId = ?";
-      db.all(sql, [filmId, reviewerId], (err, rows) => {
+      const sql = "SELECT filmId, id AS reviewId, completed, reviewDate, rating, review, type FROM reviews WHERE reviewId = ? AND filmId = ?";
+      db.all(sql, [reviewId, filmId], (err, rows) => {
           if (err)
               reject(err);
           else if (rows.length === 0)
               reject(404);
           else {
-              var review = createReview(rows[0]);
-              resolve(review);
+              getFilmReviewers(reviewId).then((reviewers) => {
+                resolve(createReview(rows[0], reviewers))
+              });
           }
       });
   });
@@ -185,7 +216,7 @@ var constants = require('../utils/constants.js');
                         //single review, check if user is already reviewing this film
                         let alreadyIssued = [];
                         let toBeIssued = [];
-                        let reviewId;
+                        let createdReviews = [];
     
                         //Evaluating if some user has already been invited to review this film
                         const promises = [];
@@ -202,33 +233,27 @@ var constants = require('../utils/constants.js');
                             }))
                         }
     
-                        Promise.all(promises).then(() => {
+                        Promise.all(promises).then(async () => {
                             //add entry in reviewers for each toBeIssued
                             if(toBeIssued.length > 0){
-                                beginTransaction().then(() => {
-                                    issueSingleReview(filmId).then((result) => {
-                                        reviewId = result;
-    
-                                        for(const userId of toBeIssued){
-                                            addReviewerToReview(reviewId, userId).catch((err) => {
-                                                abortTransaction();
-                                                reject(err);
-                                            });
-                                        }
-    
-                                        endTransaction().then(() => {
-                                            //rn returning only reviewers to which review was actually assigned
-                                            let createdReview = new Review(filmId, reviewId, toBeIssued, false);
-                                            resolve(createdReview);
-                                        }).catch(() => {
-                                            reject('500');
-                                        });
-                                    }).catch(() => {
-                                        reject('couldnt issue single review');
-                                    })
-                                }).catch(() => {
-                                    reject('500');
-                                })
+                                for(const userId of toBeIssued){
+                                    try {
+                                        await beginTransaction();
+
+                                        const result = await issueSingleReview(filmId);
+                                        const reviewId = result;
+
+                                        await addReviewerToReview(reviewId, userId);
+
+                                        createdReviews.push(new Review(filmId, reviewId, [userId], false));
+                                        await endTransaction();
+                                    } catch (err) {
+                                        await abortTransaction();
+                                        reject(err);
+                                    } 
+                                }
+
+                                resolve(createdReviews);
                             }
                             else{
                                 // no review assigned
@@ -423,16 +448,17 @@ const checkReviewersExistance = function(reviewers){
  * - no response expected for this operation
  * 
  **/
- exports.updateSingleReview = function(review, filmId, reviewerId) {
+ exports.updateSingleReview = function(review, filmId, reviewId) {
   return new Promise((resolve, reject) => {
 
-      const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND reviewerId = ?";
-      db.all(sql1, [filmId, reviewerId], (err, rows) => {
+      const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND reviewId = ? AND type = 'single'";
+      db.all(sql1, [filmId, reviewId], (err, rows) => {
           if (err)
               reject(err);
           else if (rows.length === 0)
               reject(404);
           else if(reviewerId != rows[0].reviewerId) {
+            // Check if user is a reviewer
               reject(403);
           }
           else {
@@ -466,6 +492,16 @@ const checkReviewersExistance = function(reviewers){
   });
 }
 
+
+const checkIfUserIsReviewer = function(reviewId, userId){
+    return new Promise((resolve, reject) => {
+        getFilmReviewers(reviewId).then((reviewers) => {
+            let found = reviewers.map((elem) => elem.userId).filter((id) => userId === id);
+            found.length === 1 ? resolve(true) : resolve(false);
+        })
+    })
+}
+
 /**
  * Utility functions
  */
@@ -484,7 +520,8 @@ const checkReviewersExistance = function(reviewers){
 }
 
 
-const createReview = function(row) {
-  var completedReview = (row.completed === 1) ? true : false;
-  return new Review(row.fid, row.rid, completedReview, row.reviewDate, row.rating, row.review);
+const createReview = function(review, reviewers) {
+  var completedReview = (review.completed === 1) ? true : false;
+  let reviewers_uri = reviewers.map((elem) => "/api/users/"+elem.userId);
+  return new Review(review.filmId, review.reviewId, reviewers_uri, completedReview, review.reviewDate, review.rating, review.review, review.type);
 }
