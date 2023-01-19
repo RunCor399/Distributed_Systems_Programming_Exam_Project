@@ -6,7 +6,6 @@ var constants = require('../utils/constants.js');
 
 module.exports.getDrafts = function getDrafts(req, res, next){
     let numOfDrafts = 0;
-    let next=0;
     let filmId = req.params.filmId;
     let reviewId = req.params.reviewId;
     let userId = req.user.id;
@@ -80,8 +79,6 @@ module.exports.createDraft = function createDraft(req, res, next){
     var userId = req.user.id;
     var filmId = req.params.filmId;
     var reviewId = req.params.reviewId
-
-    //Check if user is a reviewer
 
     Drafts.createDraft(filmId, reviewId, userId, draft)
         .then(function(response) {

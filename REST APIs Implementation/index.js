@@ -17,6 +17,7 @@ const db = require('./components/db');
 var userController = require(path.join(__dirname, 'controllers/UsersController'));
 var filmController = require(path.join(__dirname, 'controllers/FilmsController'));
 var reviewController = require(path.join(__dirname, 'controllers/ReviewsController'));
+var draftController = require(path.join(__dirname, 'controllers/DraftController'))
 
 /** Set up and enable Cross-Origin Resource Sharing (CORS) **/
 

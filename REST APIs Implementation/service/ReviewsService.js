@@ -5,7 +5,7 @@ const User = require('../components/user');
 var usersService = require('./UsersService');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
-
+let uf = require('./UtilFunctions');
 
 /**
  * Retrieve the reviews of the film with ID filmId
