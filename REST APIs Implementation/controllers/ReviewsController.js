@@ -69,7 +69,7 @@ module.exports.getSingleReview = function getSingleReview (req, res, next) {
 
 module.exports.deleteSingleReview = function deleteSingleReview (req, res, next) {
 
-  Reviews.deleteSingleReview(req.params.filmId, req.params.reviewerId, req.user.id)
+  Reviews.deleteSingleReview(req.params.filmId, req.params.reviewId, req.user.id)
     .then(function (response) {
       utils.writeJson(res, response, 204);
     })
@@ -121,18 +121,18 @@ module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
 
 module.exports.updateSingleReview = function updateSingleReview (req, res, next) {
   
-  if(req.params.reviewerId != req.user.id)
-  {
-    utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The reviewerId is not equal the id of the requesting user.' }], }, 400);
-  }
-  else if(req.body.completed == undefined) {
+  // if(req.params.reviewerId != req.user.id)
+  // {
+  //   utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The reviewerId is not equal the id of the requesting user.' }], }, 400);
+  // }
+  if(req.body.completed == undefined) {
     utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The completed property is absent.' }], }, 400);
   }
   else if(req.body.completed == false) {
     utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The completed property is false, but it should be set to true.' }], }, 400);
   }
   else {
-    Reviews.updateSingleReview(req.body, req.params.filmId, req.params.reviewerId)
+    Reviews.updateSingleReview(req.body, req.params.filmId, req.params.reviewId, req.user.id)
     .then(function(response) {
         utils.writeJson(res, response, 204);
     })

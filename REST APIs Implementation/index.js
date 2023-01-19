@@ -98,9 +98,9 @@ app.put('/api/films/public/:filmId', isLoggedIn, validate({ body: filmSchema }),
 app.delete('/api/films/public/:filmId', isLoggedIn, filmController.deleteSinglePublicFilm);
 app.get('/api/films/public/:filmId/reviews', reviewController.getFilmReviews);
 app.post('/api/films/public/:filmId/reviews', isLoggedIn, reviewController.issueFilmReview);
-app.get('/api/films/public/:filmId/reviews/:reviewerId', reviewController.getSingleReview);
-app.put('/api/films/public/:filmId/reviews/:reviewerId', isLoggedIn, reviewController.updateSingleReview);
-app.delete('/api/films/public/:filmId/reviews/:reviewerId', isLoggedIn, reviewController.deleteSingleReview);
+app.get('/api/films/public/:filmId/reviews/:reviewId', reviewController.getSingleReview);
+app.put('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.updateSingleReview);
+app.delete('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.deleteSingleReview);
 app.get('/api/users', isLoggedIn, userController.getUsers);
 app.post('/api/users/authenticator', userController.authenticateUser);
 app.get('/api/users/:userId', isLoggedIn, userController.getSingleUser);

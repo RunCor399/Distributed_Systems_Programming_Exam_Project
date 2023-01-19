@@ -125,32 +125,63 @@ const getFilmReviewers = function(reviewId){
  * - no response expected for this operation
  * 
  **/
- exports.deleteSingleReview = function(filmId,reviewerId,owner) {
-  return new Promise((resolve, reject) => {
-      const sql1 = "SELECT f.owner, r.completed FROM films f, reviews r WHERE f.id = r.filmId AND f.id = ? AND r.reviewerId = ?";
-      db.all(sql1, [filmId, reviewerId], (err, rows) => {
-          if (err)
-              reject(err);
-          else if (rows.length === 0)
-              reject(404);
-          else if(owner != rows[0].owner) {
-              reject("403A");
-          }
-          else if(rows[0].completed == 1) {
-              reject("403B");
-          }
-          else {
-              const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND reviewerId = ?';
-              db.run(sql2, [filmId, reviewerId], (err) => {
-                  if (err)
-                      reject(err);
-                  else
-                      resolve(null);
-              })
-          }
-      });
+ exports.deleteSingleReview = function(filmId, reviewId, userId) {
+  return new Promise(async (resolve, reject) => {
+    try{
+        await beginTransaction();
+        
+        let result = await deleteReviewers(reviewId);
+
+        if(result){
+            const sql1 = "SELECT F.owner AS owner, R.completed AS completed FROM films F, reviews R WHERE F.id = R.filmId AND F.id = ? AND R.id = ?";
+            db.all(sql1, [filmId, reviewId], (err, rows) => {
+                if (err){
+                    console.log(err);
+                    reject(err);
+                }
+                else if (rows.length === 0)
+                    reject(404);
+                else if(userId != rows[0].owner) {
+                    reject("403A");
+                }
+                else if(rows[0].completed == 1) {
+                    reject("403B");
+                }
+                else {
+                    const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND id = ?';
+                    db.run(sql2, [filmId, reviewId], (err) => {
+                        if (err){
+                            console.log(err);
+                            reject(err);
+                        }
+                        else
+                            resolve(null);
+                    })
+                }
+            });
+        }
+
+        await endTransaction();
+    }
+    catch(err){
+        await abortTransaction();
+    }
   });
 
+}
+
+const deleteReviewers = function(reviewId){
+    return new Promise((resolve, reject) => {
+        const sql = "DELETE FROM reviewers WHERE reviewId = ?";
+        db.run(sql, [reviewId], (err) => {
+            if(err){
+                reject(err);
+            }
+            else {
+                resolve(true);
+            }
+        })
+    })
 }
 
 
@@ -448,45 +479,50 @@ const checkReviewersExistance = function(reviewers){
  * - no response expected for this operation
  * 
  **/
- exports.updateSingleReview = function(review, filmId, reviewId) {
+ exports.updateSingleReview = function(review, filmId, reviewId, userId) {
   return new Promise((resolve, reject) => {
-
-      const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND reviewId = ? AND type = 'single'";
-      db.all(sql1, [filmId, reviewId], (err, rows) => {
+    //Checks if user is authorized to update review
+    console.log(filmId, reviewId, userId);
+      const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND id = ?";
+      db.all(sql1, [filmId, reviewId], async (err, rows) => {
           if (err)
               reject(err);
           else if (rows.length === 0)
               reject(404);
-          else if(reviewerId != rows[0].reviewerId) {
-            // Check if user is a reviewer
-              reject(403);
-          }
           else {
-            var sql2 = 'UPDATE reviews SET completed = ?';
-            var parameters = [review.completed];
-            if(review.reviewDate != undefined){
-              sql2 = sql2.concat(', reviewDate = ?');
-              parameters.push(review.reviewDate);
-            } 
-            if(review.rating != undefined){
-                sql2 = sql2.concat(', rating = ?');
-                parameters.push(review.rating);
-            } 
-            if(review.review != undefined){
-                sql2 = sql2.concat(', review = ?');
-                parameters.push(review.review);
-            } 
-            sql2 = sql2.concat(' WHERE filmId = ? AND reviewerId = ?');
-            parameters.push(filmId);
-            parameters.push(reviewerId);
+            let result = await checkIfUserIsReviewer(reviewId, userId);
 
-            db.run(sql2, parameters, function(err) {
-              if (err) {
-              reject(err);
-              } else {
-              resolve(null);
+            if(result){
+                var sql2 = 'UPDATE reviews SET completed = ?';
+                var parameters = [review.completed];
+                if(review.reviewDate != undefined){
+                    sql2 = sql2.concat(', reviewDate = ?');
+                    parameters.push(review.reviewDate);
+                } 
+                if(review.rating != undefined){
+                    sql2 = sql2.concat(', rating = ?');
+                    parameters.push(review.rating);
+                } 
+                if(review.review != undefined){
+                    sql2 = sql2.concat(', review = ?');
+                    parameters.push(review.review);
+                } 
+                sql2 = sql2.concat(' WHERE filmId = ? AND id = ?');
+                parameters.push(filmId);
+                parameters.push(reviewId);
+
+                db.run(sql2, parameters, function(err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        // IS IT NEEDED TO RETURN WHAT WAS MODIFIED?
+                        resolve(null);
+                    }
+                })
+            } 
+            else {
+                reject(403);
             }
-           })
           }
       });
   });
