@@ -101,6 +101,12 @@ app.post('/api/films/public/:filmId/reviews', isLoggedIn, reviewController.issue
 app.get('/api/films/public/:filmId/reviews/:reviewId', reviewController.getSingleReview);
 app.put('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.updateSingleReview);
 app.delete('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.deleteSingleReview);
+
+app.get('/api/films/public/:filmId/reviews/:reviewId/drafts', isLoggedIn, draftController.getDrafts);
+app.post('/api/films/public/:filmId/reviews/:reviewId/drafts', isLoggedIn, draftController.createDraft);
+app.get('/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId', isLoggedIn, draftController.getSingleDraft);
+app.put('/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId', isLoggedIn, draftController.voteDraft);
+
 app.get('/api/users', isLoggedIn, userController.getUsers);
 app.post('/api/users/authenticator', userController.authenticateUser);
 app.get('/api/users/:userId', isLoggedIn, userController.getSingleUser);

@@ -529,7 +529,7 @@ const checkReviewersExistance = function(reviewers){
 }
 
 
-const checkIfUserIsReviewer = function(reviewId, userId){
+exports.checkIfUserIsReviewer = function(reviewId, userId){
     return new Promise((resolve, reject) => {
         getFilmReviewers(reviewId).then((reviewers) => {
             let found = reviewers.map((elem) => elem.userId).filter((id) => userId === id);
