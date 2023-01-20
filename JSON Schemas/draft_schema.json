@@ -14,10 +14,25 @@
             "type": "integer",
             "description": "unique identifier of the draft"
         },
-        "filmId": {"$ref": "./review_schema.json#/definitions/filmId"},
-        "reviewId": {"$ref": "./review_schema.json#/definitions/reviewId"},
-        "rating": {"$ref": "./review_schema.json#/definitions/rating"},
-        "review": {"$ref": "./review_schema.json#/definitions/review"},
+        "filmId": {
+            "type": "integer",
+            "description": "unique identifier of the film for which this draft review was created"
+        },
+        "reviewId": {
+            "type": "integer",
+            "description": "unique identifier of the review for which the draft was created"
+        },
+        "rating": {
+            "type": "integer",
+            "description": "the rating the reviewer has given to the film",
+            "minimum": 1,
+            "maximum": 10
+        },
+        "review": {
+            "type": "string",
+            "description": "a textual description of the review",
+            "maxLength": 1000
+        },
         
         "author": {
             "oneOf": [
@@ -41,8 +56,8 @@
             "type": "array",
             "items": {
                 "$ref": "./vote_schema.json"
-              },
-              "uniqueItems": true
+            },
+            "uniqueItems": true
         }
     }
 }

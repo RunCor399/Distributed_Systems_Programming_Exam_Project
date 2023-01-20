@@ -5,12 +5,21 @@
     "description": "JSON Schema that represents a review Draft when is created",
     "type": "object",
     "additionalProperties": false,
-    "allOf": [
-      { "$ref": "./draft_schema.json" },
-      {
-        "not": {
-          "required": ["draftId", "votes"]
-        }
+    "properties": {
+      "$schema": {
+        "type": "string",
+        "description": "path to the JSON Schema to use for the validation of the data structure"
+      },
+      "rating": {
+        "type": "integer",
+        "description": "the rating the reviewer has given to the film",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "review": {
+        "type": "string",
+        "description": "a textual description of the review",
+        "maxLength": 1000
       }
-    ]
+    }
 }

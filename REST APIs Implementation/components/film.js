@@ -16,6 +16,7 @@ class Film{
         
         var selfLink = (privateFilm? "/api/films/private/" + this.id : "/api/films/public/" + this.id);
         this.self =  selfLink;
+        this.reviewsLink = (privateFilm ? "/api/films/private/" + this.id + "/reviews": "/api/films/public/" + this.id + "/reviews");
     }
 }
 

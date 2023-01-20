@@ -15,6 +15,10 @@ class Review{
         
         var selfLink = "/api/films/public/" + this.filmId + "/reviews/" + this.reviewId;
         this.self =  selfLink;
+        this.filmLink = "/api/films/public/" + this.filmId;
+
+        if(type === "coop")
+            this.draftsLink = "/api/films/public/" + this.filmId + "/reviews/" + this.reviewId + "/drafts"
     }
 }
 

@@ -2,18 +2,90 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id" : "http://www.my-schema.com/review_schema.json",
     "title": "Review Create",
-    "description": "JSON Schema that represents a newly created Review",
+    "description": "JSON Schema that represents a Review Creation",
     "type": "object",
     "additionalProperties": false,
-    "allOf": [
-        { "$ref": "./review_schema.json" },
-        { 
-            "not": {
-                "properties": {
-                    "reviewId": { "type": "string" }
-                },
-                "required": ["reviewId"]
-            }
+    "properties": {
+      "$schema": {
+        "type": "string",
+        "description": "path to the JSON Schema to use for the validation of the data structure"
+      },
+      "reviewers": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        },
+        "uniqueItems": true,
+        "minItems": 1
+      },
+      "completed": {
+        "type": "boolean",
+        "description": "true if the review has been completed, false otherwise",
+        "default": "true"
+      },  
+      "reviewDate": {
+        "type": "string",
+        "format": "date",
+        "description": "the date when the review has been completed by the invited user"
+      },
+      "rating": {
+        "type": "integer",
+        "description": "the rating the reviewer has given to the film",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "review": {
+        "type": "string",
+        "description": "a textual description of the review",
+        "maxLength": 1000
+      },
+      "review_type": {
+        "type": "string",
+        "enum": ["single", "coop"]
+      },
+      "self": {
+        
+      }
+    },
+    "required": ["reviewers", "review_type", "completed"],
+    "if": {
+        "properties": { "review_type": { "const": "coop" } }
+    },
+    "then": {
+        "not": {
+          "properties": { "completed": { "const": true } }
         }
-    ]
-}
+    },
+    "dependencies": {
+      "completed": {
+        "oneOf": [
+          {
+            "properties": {
+              "completed": {
+                "const": false
+              }
+            },
+            "allOf" : [   
+              {"not" : { "required" : ["reviewDate"] } },  
+              {"not" : { "required" : ["rating"] } },
+              {"not" : { "required" : ["review"] } }
+            ]
+          },
+          {
+            "properties": {
+              "completed": {
+                "const": true  
+              }
+            },
+            "required": [
+              "reviewDate", "rating", "review"
+            ]
+          }
+        ]
+      },
+      "reviewDate": ["completed"],
+      "rating": ["completed"],
+      "review": ["completed"]
+    }
+  }
+  

@@ -10,17 +10,25 @@
         "type": "string",
         "description": "path to the JSON Schema to use for the validation of the data structure"
       },
+      "filmLink": {
+        "type": "string",
+        "format": "uri",
+        "default": "/api/films/public/2",
+        "description": "link to the film for which a new review has been created"
+      },
       "filmId": {
         "type": "integer",
-        "description": "unique identifier of the film for which this review invitation has been issued"
+        "default": 2
       },
       "reviewId": {
         "type": "integer",
-        "description": "unique identifier of the review"
+        "description": "unique identifier of the review",
+        "default": 1
       },
       "review_type": {
         "type": "string",
-        "enum": ["single", "coop"]
+        "enum": ["single", "coop"],
+        "default": "coop"
       },
       "reviewers": {
         "type": "array",
@@ -52,9 +60,30 @@
         "type": "string",
         "description": "a textual description of the review",
         "maxLength": 1000
+      },
+      "self": {
+        "type": "string",
+        "description": "link to this review",
+        "format": "uri",
+        "default": "/api/films/public/2/reviews/1"
+      },
+      "draftsLink": {
+        "type": "string",
+        "description": "link to drafts of this review",
+        "format": "uri",
+        "default": "/api/films/public/2/reviews/1/drafts"
       }
     },
     "required": ["filmId", "reviewId", "reviewers"],
+    "if": {
+      "properties": { "review_type": { "const": "coop" } }
+    },
+    "then": {
+      "not": {
+          "properties": { "completed": { "const": true } }
+        },
+      "required": ["draftsLink"]
+    },
     "dependencies": {
       "completed": {
         "oneOf": [

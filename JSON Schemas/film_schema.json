@@ -11,8 +11,7 @@
       "description": "path to the JSON Schema to use for the validation of the JSON file describing the film"
     },
     "id": {
-      "type": "integer",
-      "description": "unique identifier for the film data structure"
+      "type": "integer"
     },
     "title": {
       "type": "string",

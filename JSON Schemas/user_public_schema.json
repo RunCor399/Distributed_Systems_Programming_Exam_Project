@@ -9,7 +9,12 @@
             "type": "string",
             "format": "email"
         },
-        "name": {"type": "string"}
+        "name": {"type": "string"},
+        "self": {
+            "type": "string",
+            "format": "uri",
+            "default": "/api/users/1"
+        }
     },
     "required": ["email", "id", "name"]
 }
