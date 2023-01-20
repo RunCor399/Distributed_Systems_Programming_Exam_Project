@@ -33,9 +33,13 @@
       "reviewers": {
         "type": "array",
         "items": {
-          "type": "string",
-          "format": "uri",
-          "default": "/api/users/1"
+          "type": "object",
+          "properties": {
+            "userId" : {
+              "format": "uri",
+              "default": "/api/users/1"
+            }
+          }
         },
         "uniqueItems": true,
         "minItems": 1

@@ -61,13 +61,13 @@
                         "type": "boolean",
                         "default": true
                     },
-                    "message": {
+                    "reason": {
                         "type": "string"
                     }
                 },
                 "required": ["userId", "vote"],
                 "if": {"properties": {"vote": {"const": false}}},
-                "then": {"required": ["message"]}
+                "then": {"required": ["reason"]}
             },
             "uniqueItems": true,
             "default": {"userId": 1, "vote":"agree"}
