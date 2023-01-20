@@ -8,14 +8,13 @@ module.exports.getDrafts = function getDrafts(req, res, next){
     let numOfDrafts = 0;
     let filmId = req.params.filmId;
     let reviewId = req.params.reviewId;
-    let userId = req.user.id;
 
     //Check if user is a reviewer
 
     Drafts.getTotalDrafts(filmId, reviewId)
         .then(function(response) {
             numOfDrafts = response;
-            Drafts.getDrafts(filmId, reviewId, userId)
+            Drafts.getDrafts(req)
             .then(function(response) {
                 if (req.query.pageNo == null) var pageNo = 1;
                 else var pageNo = req.query.pageNo;
@@ -26,21 +25,21 @@ module.exports.getDrafts = function getDrafts(req, res, next){
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        films: {}
+                        drafts: {}
                     });
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        films: response
+                        drafts: response
                     });
                 } else {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        films: response,
+                        drafts: response,
                         next: "/api/films/public/"+ filmId +"/reviews/"+ reviewId +"/drafts?pageNo=" + next
                     });
                 }

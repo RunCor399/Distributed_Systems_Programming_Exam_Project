@@ -1,3 +1,2 @@
-DELETE FROM reviews WHERE 1 = 1;
-DELETE FROM reviewers WHERE 1 = 1;
-DELETE FROM drafts WHERE 1 = 1;
+INSERT INTO votes ('draftId', 'userId', 'vote', 'reason') 
+VALUES (1,2,0, "bad")

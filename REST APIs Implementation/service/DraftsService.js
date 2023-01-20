@@ -19,15 +19,45 @@ exports.getTotalDrafts = function(filmId, reviewId){
     });
 }
 
-exports.getDrafts = function(filmId, reviewId, userId){
+exports.getDrafts = function(req){
     return new Promise(async (resolve, reject) => {
+        let filmId = req.params.filmId;
+        let reviewId = req.params.reviewId;
+        let userId = req.user.id;
+
         let check1 = await uf.filmExists(filmId);
         let check2 = await uf.reviewExist(reviewId);
         let check3 = await checkPermissions(reviewId, userId);
 
         if(check1 && check2 && check3){
             //can return drafts
-            const sql = "SELECT "
+
+            let sql = `SELECT id AS draftId, reviewId AS reviewId, userId AS author, rating, review, status
+                       FROM drafts`;
+
+            let params = getPagination(req)
+            if (params.length == 2) sql = sql + " LIMIT ?,?";
+
+            db.all(sql, params, async (err, rows) => {
+                if(err){
+                    console.log(err);
+                    reject(err);
+                }
+                else{
+                    console.log(rows);
+                    let complete_drafts = [];
+
+                    for(const draft of rows){
+                        let votes = await getVotesOfDraft(draft.draftId);
+                        console.log(votes);
+                        let complete_draft = createDraft(filmId, draft, votes);
+                        complete_drafts.push(complete_draft);
+                    }
+
+                    console.log(complete_drafts);
+                    resolve(complete_drafts);
+                }
+            })
         }
     });
 }
@@ -126,5 +156,46 @@ const checkReviewIsCooperative = function(reviewId){
             }
         })
     })
+}
+
+const getVotesOfDraft = function(draftId){
+    return new Promise((resolve,reject) => {
+        const sql = "SELECT userId, vote, reason FROM votes WHERE draftId = ?";
+
+        db.all(sql, [draftId], (err, votes) => {
+            if(err){
+                reject(err);
+            }
+            else{
+                votes === undefined ? resolve([]) : resolve(votes);
+            }
+        })
+    })
+}
+
+const getPagination = function(req) {
+    var pageNo = parseInt(req.query.pageNo);
+    var size = parseInt(constants.OFFSET);
+    var limits = [];
+
+    if (req.query.pageNo == null) {
+        pageNo = 1;
+    }
+    limits.push(size * (pageNo - 1));
+    limits.push(size);
+    return limits;
+}
+
+const createDraft = function(filmId, draft, votes) {
+    var status = (draft.status === 1) ? "open" : "closed";
+    //let votes_uri = votes.map((elem) => {elem.userId = "/api/users/"+elem.userId});
+
+    let votes_uri = [];
+
+    for(const vote of votes){
+        votes_uri.push({"userId": "/api/users/"+vote.userId, "vote": vote.vote, "reason": vote.reason});
+    }
+
+    return new Draft(draft.draftId, filmId, draft.reviewId, votes_uri, draft.rating, draft.review, status, draft.author);
 }
 

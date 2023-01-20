@@ -99,6 +99,7 @@ const getFilmReviewers = function(reviewId){
  exports.getSingleReview = function(filmId, reviewId) {
   return new Promise((resolve, reject) => {
       const sql = "SELECT filmId, id AS reviewId, completed, reviewDate, rating, review, type FROM reviews WHERE reviewId = ? AND filmId = ?";
+      console.log(filmId, reviewId);
       db.all(sql, [reviewId, filmId], (err, rows) => {
           if (err)
               reject(err);
@@ -558,6 +559,12 @@ exports.checkIfUserIsReviewer = function(reviewId, userId){
 
 const createReview = function(review, reviewers) {
   var completedReview = (review.completed === 1) ? true : false;
-  let reviewers_uri = reviewers.map((elem) => "/api/users/"+elem.userId);
+  //let reviewers_uri = reviewers.map((elem) => "/api/users/"+elem.userId);
+
+  let reviewers_uri = []
+  for(const reviewer of reviewers){
+    reviewers_uri.push({"userId": "api/users/"+reviewer.userId});
+  }
+
   return new Review(review.filmId, review.reviewId, reviewers_uri, completedReview, review.reviewDate, review.rating, review.review, review.type);
 }

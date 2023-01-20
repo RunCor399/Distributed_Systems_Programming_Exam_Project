@@ -52,7 +52,7 @@ module.exports.getFilmReviews = function getFilmReviews (req, res, next) {
 
 module.exports.getSingleReview = function getSingleReview (req, res, next) {
 
-    Reviews.getSingleReview(req.params.filmId, req.params.reviewerId)
+    Reviews.getSingleReview(req.params.filmId, req.params.reviewId)
         .then(function(response) {
             utils.writeJson(res, response);
         })
