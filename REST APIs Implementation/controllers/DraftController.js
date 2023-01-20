@@ -88,6 +88,20 @@ module.exports.createDraft = function createDraft(req, res, next){
         });
 }
 
-module.exports.voteDraft = function voteDraft(req, res, next){
-    //Update of the draft, more specifically of the votes table
+module.exports.voteDraft = async function voteDraft(req, res, next){
+    let voteResult;
+
+    try{
+        voteResult = await Drafts.voteDraft(req);
+
+        if(!res.headersSent){
+            utils.writeJson(res, voteResult, 204);
+        }
+        
+    } catch(err){
+        console.log("dd:", err);
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': err }], }, 500);
+    }
+
+    
 }

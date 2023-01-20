@@ -7,7 +7,7 @@ class Draft{
         this.rating = rating;
         this.review = review;
         this.status = status;
-        this.author = author;
+        this.author = "/api/users/" + author;
         var selfLink = "/api/films/public/" + this.filmId + "/reviews/" + this.reviewId + "/drafts/" + this.draftId;
         this.self =  selfLink;
         this.reviewLink = "/api/films/public/" + this.filmId + "/reviews/" + this.reviewId;

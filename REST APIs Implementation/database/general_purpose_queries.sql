@@ -1,2 +1,2 @@
-INSERT INTO votes ('draftId', 'userId', 'vote', 'reason') 
-VALUES (1,2,0, "bad")
+DELETE FROM votes WHERE 1 = 1;
+UPDATE drafts SET status = true WHERE id = 2;

@@ -43,9 +43,10 @@
             "default": "/api/users/1"
         },
         "status": {
-            "type": "boolean",
-            "description": "true if the draft is open, false otherwise",
-            "default": "true"
+            "type": "string",
+            "enum": ["open", "closed"],
+            "description": "draft open or closed",
+            "default": "open"
         },
         "votes": {
             "type": "array",

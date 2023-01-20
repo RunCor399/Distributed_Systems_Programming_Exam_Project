@@ -516,7 +516,6 @@ const checkReviewersExistance = function(reviewers){
                     if (err) {
                         reject(err);
                     } else {
-                        // IS IT NEEDED TO RETURN WHAT WAS MODIFIED?
                         resolve(null);
                     }
                 })
@@ -535,6 +534,22 @@ exports.checkIfUserIsReviewer = function(reviewId, userId){
         getFilmReviewers(reviewId).then((reviewers) => {
             let found = reviewers.map((elem) => elem.userId).filter((id) => userId === id);
             found.length === 1 ? resolve(true) : resolve(false);
+        })
+    })
+}
+
+exports.updateReviewWithDraft = function(reviewId, draft){
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE reviews SET completed = ?, reviewDate = ?, review = ?, rating = ?";
+        let today = new Date();
+        let date = today.toISOString().slice(0, 10);
+        db.run(sql, [true, date, draft.review, draft.rating], (err) => {
+            if(err){
+                reject(err);
+            }
+            else{
+                resolve(true);
+            }
         })
     })
 }
@@ -559,9 +574,8 @@ exports.checkIfUserIsReviewer = function(reviewId, userId){
 
 const createReview = function(review, reviewers) {
   var completedReview = (review.completed === 1) ? true : false;
-  //let reviewers_uri = reviewers.map((elem) => "/api/users/"+elem.userId);
-
   let reviewers_uri = []
+  
   for(const reviewer of reviewers){
     reviewers_uri.push({"userId": "api/users/"+reviewer.userId});
   }

@@ -4,7 +4,7 @@ class Film{
             this.id = id;
 
         this.title = title;
-        this.owner = owner;
+        this.owner = "/api/users/"+owner;
         this.private = privateFilm;
 
         if(watchDate)

@@ -11,7 +11,15 @@
             "description": "path to the JSON Schema to use for the validation of the data structure"
         },
         "vote": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
+        },
+        "reason": {
+            "type": "string",
+            "default": "bad",
+            "description": "Reason for disagreement on the review"
         }
-    }
+    },
+    "if": {"properties": {"vote": {"const": false}}},
+    "then": {"required": ["reason"]}
 }
