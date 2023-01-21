@@ -62,7 +62,7 @@ exports.getDrafts = function(req){
     });
 }
 
-exports.getSingleDraft = function(filmId, reviewId, userId){
+exports.getSingleDraft = function(filmId, reviewId, userId, draftId){
     return new Promise(async (resolve, reject) => {
         let check1 = await checkPermissions(reviewId, userId);
         let check2 = await uf.reviewExist(reviewId);
@@ -70,21 +70,26 @@ exports.getSingleDraft = function(filmId, reviewId, userId){
 
         if(check1 && check2){
             let sql = `SELECT id AS draftId, reviewId AS reviewId, userId AS author, rating, review, status
-                       FROM drafts WHERE reviewId = ?`;
+                       FROM drafts WHERE id = ?`;
 
-            db.get(sql, [reviewId], async (err, draft) => {
+            db.get(sql, [draftId], async (err, draft) => {
                 if(err){
                     console.log(err);
                     reject(err);
                 }
                 else{
                     console.log(draft);
-
-                    let votes = await getVotesOfDraft(draft.draftId);
-                    let complete_draft = createDraft(filmId, draft, votes);
+                    if(draft !== undefined){
+                        let votes = await getVotesOfDraft(draftId);
+                        let complete_draft = createDraft(filmId, draft, votes);
                     
-                    console.log(complete_draft);
-                    resolve(complete_draft);
+                        console.log(complete_draft);
+                        resolve(complete_draft);
+                    }
+                    else{
+                        reject(404);
+                    }
+                    
                 }
             })      
         }
@@ -108,9 +113,17 @@ exports.createDraft = function(filmId, reviewId, userId, draft){
                 }
                 else{
                     let lastID = await uf.getLastInsertId();
-                    let createdDraft = new Draft(lastID, filmId, reviewId, [], draft.rating, draft.review, 'open', userId);
+                    let voteInsertResult = await insertVote(lastID, userId, {"vote": true})
 
-                    resolve(createdDraft);
+                    if(voteInsertResult){
+                        let implicitVote = {"userId": userId, "vote": true};
+                        let createdDraft = new Draft(lastID, filmId, reviewId, [implicitVote], draft.rating, draft.review, 'open', userId);
+
+                        resolve(createdDraft);
+                    }
+                    else{
+                        reject(err);
+                    }
                 }
             })
 

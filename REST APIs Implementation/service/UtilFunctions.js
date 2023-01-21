@@ -3,6 +3,20 @@
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
 
+const errorMessages = [
+                        {id:"200", code:200, message:"Successfull Operation"},
+                        {id:"201", code:201, message:"Created"},
+                        {id:"204", code:204, message:"No Content"},
+                        {id:"400", code:400, message:"Bad Request"},
+                        {id:"401", code:401, message:"Unauthorized"},
+                        {id:"403", code:403, message:"Forbidden"},
+                        {id:"404", code:403, message:"Not Found"},
+                        {id:"409a", code:409, message:"This film cannot be updated"},
+                        {id:"409b", code:409, message:"You are not a reviewer of this specific review"},
+                        {id:"409c", code:409, message:""},
+                        {id:"500", code:200, message:"Internal Server Error"},
+                    ];
+
 
 exports.getLastInsertId = function(){
     return new Promise((resolve, reject) => {
@@ -91,5 +105,10 @@ exports.getNumVotesOfDraft = function(draftId){
             }
         });
     })
+}
+
+
+exports.getErrorMessage = function(code){
+    return errorMessages.filter((elem) => elem.id === code)
 }
 

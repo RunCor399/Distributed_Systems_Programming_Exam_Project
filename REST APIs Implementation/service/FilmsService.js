@@ -3,6 +3,7 @@
 const Film = require('../components/film');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
+const uf = require('./UtilFunctions')
 
 /**
  * Create a new film
@@ -310,12 +311,13 @@ var constants = require('../utils/constants.js');
  **/
  exports.getInvitedFilms = function(req) {
     return new Promise((resolve, reject) => {
-  
-      var sql = "SELECT f.id as fid, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, reviews r, (SELECT count(*) total_rows FROM films f2, reviews r2 WHERE f2.private=0 AND f2.id = r2.filmId AND r2.reviewerId = ?) c WHERE  f.private = 0 AND f.id = r.filmId AND r.reviewerId = ?"
+      var sql = "SELECT F.id as id, F.title AS title, F.owner, F.private, F.watchDate, F.rating, F.favorite, C.total_rows FROM films F, reviews R, (SELECT COUNT(*) total_rows FROM films F2, reviews R2, reviewers RW2 WHERE F2.private=0 AND R2.completed = ? AND F2.id = R2.filmId AND R2.id = RW2.reviewId AND RW2.userId = ?) C, reviewers RW WHERE F.private = 0 AND R.completed = ? AND F.id = R.filmId AND R.id = RW.reviewId AND RW.userId = ?"
       var limits = getPagination(req);
       if (limits.length != 0) sql = sql + " LIMIT ?,?";
       limits.unshift(req.user.id);
+      limits.unshift(false);
       limits.unshift(req.user.id);
+      limits.unshift(false);
   
       db.all(sql, limits, (err, rows) => {
           if (err) {
@@ -339,7 +341,6 @@ var constants = require('../utils/constants.js');
  **/
  exports.getPrivateFilms = function(req) {
     return new Promise((resolve, reject) => {
-  
         var sql = "SELECT f.id as fid, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, (SELECT count(*) total_rows FROM films l WHERE l.private=1 AND owner = ?) c WHERE  f.private = 1 AND owner = ?"
         var limits = getPagination(req);
         if (limits.length != 0) sql = sql + " LIMIT ?,?";
@@ -387,10 +388,10 @@ var constants = require('../utils/constants.js');
  * - total number of public films for which the user has received a review invitation
  * 
  **/
- exports.getInvitedFilmsTotal = function(reviewerId) {
+ exports.getInvitedFilmsTotal = function(userId) {
     return new Promise((resolve, reject) => {
-        var sqlNumOfFilms = "SELECT count(*) total FROM films f, reviews r WHERE  f.private = 0 AND f.id = r.filmId AND r.reviewerId = ? ";
-        db.get(sqlNumOfFilms, [reviewerId], (err, size) => {
+        var sqlNumOfFilms = "SELECT count(*) total FROM films F, reviews R, reviewers RW WHERE  F.private = 0 AND F.id = R.filmId AND R.id = RW.reviewId AND RW.userId = ?";
+        db.get(sqlNumOfFilms, [userId], (err, size) => {
             if (err) {
                 reject(err);
             } else {
@@ -445,7 +446,7 @@ const createFilm = function(row) {
   var favoriteFilm;
   if(row.favorite == null) favoriteFilm = undefined;
   else favoriteFilm = (row.favorite === 1) ? true : false;
-  return new Film(row.fid, row.title, row.owner, privateFilm, row.watchDate, row.rating, favoriteFilm);
+  return new Film(row.id, row.title, row.owner, privateFilm, row.watchDate, row.rating, favoriteFilm);
 }
 
 

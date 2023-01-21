@@ -717,6 +717,12 @@ paths:
                     type: string
                     format: uri
                     default: "/api/films/public/2/reviews/1/drafts?pageNo=2"
+        '401':
+          description: Unauthorized
+          content: {}
+        '403':
+          description: Forbidden
+          content: {}
         '404':
           description: Not Found
           content: {}
@@ -818,6 +824,12 @@ paths:
             application/json:
               schema:
                 $ref: '../JSON Schemas/draft_response_schema.json'
+        '401':
+          description: Unauthorized
+          content: {}
+        '403':
+          description: Forbidden
+          content: {}
         '404':
           description: Not Found
           content: {}

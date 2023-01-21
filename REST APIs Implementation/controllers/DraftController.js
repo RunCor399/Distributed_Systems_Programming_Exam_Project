@@ -54,18 +54,16 @@ module.exports.getDrafts = function getDrafts(req, res, next){
 }
 
 module.exports.getSingleDraft = function getSingleDraft(req, res, next){
-
-    //Check if user is a reviewer
-    Drafts.getSingleDraft(req.params.filmId, req.params.reviewId, req.user.id)
+    Drafts.getSingleDraft(req.params.filmId, req.params.reviewId, req.user.id, req.params.draftId)
           .then(function(response) {
               utils.writeJson(res, response);
           })
           .catch(function(response) {
               if(response == 403){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film.' }], }, 403);
+                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not a reviewer' }], }, 403);
               }
               else if (response == 404){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
+                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The draft does not exist.' }], }, 404);
               }
               else {
                   utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);

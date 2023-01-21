@@ -97,6 +97,7 @@ const getFilmReviewers = function(reviewId){
  * 
  **/
  exports.getSingleReview = function(filmId, reviewId) {
+    //Incompleted reviews cant be get, they can be seen by reviewers through /invited api
   return new Promise((resolve, reject) => {
       const sql = "SELECT filmId, id AS reviewId, completed, reviewDate, rating, review, type FROM reviews WHERE reviewId = ? AND filmId = ?";
       console.log(filmId, reviewId);
