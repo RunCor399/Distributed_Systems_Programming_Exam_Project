@@ -3,7 +3,7 @@
 const User = require('../components/user');
 const db = require('../components/db');
 const bcrypt = require('bcrypt');
-
+const uf = require('./UtilFunctions');
 
 /**
  * Retrieve a user by her email
@@ -21,10 +21,13 @@ const bcrypt = require('bcrypt');
           if (err) 
               reject(err);
           else if (rows.length === 0)
-              resolve(undefined);
+              resolve(uf.getResponseMessage("404"));
           else{
               const user = createUser(rows[0]);
-              resolve(user);
+              let response = uf.getResponseMessage("200");
+              response[0]["payload"] = user;
+
+              resolve(response);
           }
       });
   });
@@ -44,12 +47,15 @@ exports.getUserById = function (id) {
       const sql = "SELECT id, name, email FROM users WHERE id = ?"
       db.all(sql, [id], (err, rows) => {
           if (err) 
-              reject(err);
+              reject(uf.getResponseMessage("500"));
           else if (rows.length === 0)
-              resolve(undefined);
+              reject(uf.getResponseMessage("404"));
           else{
               const user = createUser(rows[0]);
-              resolve(user);
+              let response = uf.getResponseMessage("200")
+              response[0]["payload"] = user;
+
+              resolve(response);
           }
       });
   });
@@ -69,13 +75,16 @@ exports.getUsers = function() {
         const sql = "SELECT id, name, email FROM users";
         db.all(sql, [], (err, rows) => {
             if (err) {
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             } else {
                 if (rows.length === 0)
-                     resolve(undefined);
+                     reject(uf.getResponseMessage("404"));
                 else {
                     let users = rows.map((row) => createUser(row));
-                    resolve(users);
+                    let response = uf.getResponseMessage("200");
+                    response[0]["payload"] = users;
+
+                    resolve(response);
                 }
             }
         });

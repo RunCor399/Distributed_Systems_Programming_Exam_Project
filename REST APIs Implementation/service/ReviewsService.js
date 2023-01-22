@@ -6,7 +6,7 @@ var usersService = require('./UsersService');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
 let uf = require('./UtilFunctions');
-const { deleteDraftsAndVotesOfReview } = require('./DraftsService');
+let draftsService = require('./DraftsService')
 
 /**
  * Retrieve the reviews of the film with ID filmId
@@ -26,22 +26,20 @@ const { deleteDraftsAndVotesOfReview } = require('./DraftsService');
           if (err) {
                 reject(uf.getResponseMessage("500"));
           } else {
-                //console.log(rows);
-                //let reviews = rows.map((row) => createReview(row));
-
                 let complete_reviews = []
                 let promises = [];
                 for(const review of rows){
                     promises.push(getFilmReviewers(review.reviewId).then((reviewers) => {
                         let complete_review = createReview(review, reviewers);
                         complete_reviews.push(complete_review);
-                        console.log(reviewers);
                     }));
                 }
 
+                
+
                 Promise.all(promises).then(() => {
                     let response = uf.getResponseMessage("200");
-                    response["payload"] = complete_reviews;
+                    response[0]["payload"] = complete_reviews;
 
                     resolve(response)
                 });
@@ -58,11 +56,8 @@ const getFilmReviewers = function(reviewId){
             if(err){
                 reject(uf.getResponseMessage("500"));
             }
-            else{
-                let response = uf.getResponseMessage("200");
-                response["payload"] = rows;
-                
-                resolve(response)
+            else{    
+                resolve(rows)
             }
         });
     });
@@ -116,7 +111,7 @@ const getFilmReviewers = function(reviewId){
               getFilmReviewers(reviewId).then((reviewers) => {
                 let complete_review = createReview(rows[0], reviewers);
                 let response = uf.getResponseMessage("200");
-                response["payload"] = complete_review;
+                response[0]["payload"] = complete_review;
 
                 resolve(response)
               });
@@ -142,14 +137,13 @@ const getFilmReviewers = function(reviewId){
     try{
         await beginTransaction();
         
-        let result = await deleteReviewers(reviewId);
-        await deleteDraftsAndVotesOfReview(reviewId);
+        let result = await exports.deleteReviewers(reviewId);
+        await draftsService.deleteDraftsAndVotesOfReview(reviewId);
 
         if(result){
             const sql1 = "SELECT F.owner AS owner, R.completed AS completed FROM films F, reviews R WHERE F.id = R.filmId AND F.id = ? AND R.id = ?";
             db.all(sql1, [filmId, reviewId], (err, rows) => {
                 if (err){
-                    console.log(err);
                     reject(uf.getResponseMessage("500"));
                 }
                 else if (rows.length === 0)
@@ -164,7 +158,6 @@ const getFilmReviewers = function(reviewId){
                     const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND id = ?';
                     db.run(sql2, [filmId, reviewId], (err) => {
                         if (err){
-                            console.log(err);
                             reject(uf.getResponseMessage("500"));
                         }
                         else
@@ -177,7 +170,13 @@ const getFilmReviewers = function(reviewId){
         await endTransaction();
     }
     catch(err){
-        await abortTransaction();
+        try{
+            await abortTransaction();
+            reject(uf.getResponseMessage("500"));
+        }
+        catch(err){
+            reject(uf.getResponseMessage("500"));
+        }
     }
   });
 
@@ -213,107 +212,111 @@ exports.deleteReviewers = function(reviewId){
  **/
  exports.issueFilmReview = function(body, owner) {
   return new Promise((resolve, reject) => {
-      const filmId = body.filmId;
-      const reviewers = body.reviewers;
-      const review_type = body.review_type;
+    try{
+        const filmId = body.filmId;
+        const reviewers = body.reviewers;
+        const review_type = body.review_type;
 
-      const sql1 = "SELECT owner, private FROM films WHERE id = ?";
-      db.all(sql1, [filmId], (err, rows) => {
-          if (err){
-                reject(uf.getResponseMessage("500"));
-          }
-          else if (rows.length === 0){
-              reject(uf.getResponseMessage("404"));
-          }
-          else if(owner != rows[0].owner) {
-              reject(uf.getResponseMessage("403a"));
-          } else if(rows[0].private == 1) {
-              reject(uf.getResponseMessage("404"));
-          }
-          else {
-            checkReviewersExistance(reviewers).then((reviewersExist) => {
-                if(reviewersExist){
-                    if (review_type === "coop" && reviewers.length > 1){
-                        let reviewId;
-    
-                        //cooperative review, no further checks
-                        beginTransaction().then(() => {
-                            issueCooperativeReview(filmId, reviewers).then((result) => {
-                                reviewId = result;
-                                endTransaction().then(() => {
-                                    let createdReview = new Review(filmId, reviewId, reviewers, false);
-                                    let response = uf.getResponseMessage("201");
-                                    response["payload"] = createdReview;
+        const sql1 = "SELECT owner, private FROM films WHERE id = ?";
+        db.all(sql1, [filmId], (err, rows) => {
+            if (err){
+                    reject(uf.getResponseMessage("500"));
+            }
+            else if (rows.length === 0){
+                reject(uf.getResponseMessage("404"));
+            }
+            else if(owner != rows[0].owner) {
+                reject(uf.getResponseMessage("403a"));
+            } else if(rows[0].private == 1) {
+                reject(uf.getResponseMessage("404"));
+            }
+            else {
+                checkReviewersExistance(reviewers).then((reviewersExist) => {
+                    if(reviewersExist){
+                        if (review_type === "coop" && reviewers.length > 1){
+                            let reviewId;
+        
+                            //cooperative review, no further checks
+                            beginTransaction().then(() => {
+                                issueCooperativeReview(filmId, reviewers).then((result) => {
+                                    reviewId = result;
+                                    endTransaction().then(() => {
+                                        let createdReview = new Review(filmId, reviewId, reviewers, false);
+                                        let response = uf.getResponseMessage("201");
+                                        response["payload"] = createdReview;
 
-                                    resolve(response);
+                                        resolve(response);
+                                    }).catch(() => {
+                                        reject(uf.getResponseMessage("500"));
+                                    })
                                 }).catch(() => {
-                                    reject(uf.getResponseMessage("500"));
+                                    reject(uf.getResponseMessage("409c"));
                                 })
                             }).catch(() => {
-                                reject(uf.getResponseMessage("409c"));
+                                reject(uf.getResponseMessage("500"));
                             })
-                        }).catch(() => {
-                            reject(uf.getResponseMessage("500"));
-                        })
-                        
-                    }
-                    else{
-                        //single review, check if user is already reviewing this film
-                        let alreadyIssued = [];
-                        let toBeIssued = [];
-                        let createdReviews = [];
-    
-                        //Evaluating if some user has already been invited to review this film
-                        const promises = [];
-                        for(const id of reviewers){
-                            promises.push(checkSingleUserReviewing(id, filmId).then((result) => {
-                                if(result){
-                                    toBeIssued.push(id);
+                            
+                        }
+                        else{
+                            //single review, check if user is already reviewing this film
+                            let alreadyIssued = [];
+                            let toBeIssued = [];
+                            let createdReviews = [];
+        
+                            //Evaluating if some user has already been invited to review this film
+                            const promises = [];
+                            for(const id of reviewers){
+                                promises.push(checkSingleUserReviewing(id, filmId).then((result) => {
+                                    if(result){
+                                        toBeIssued.push(id);
+                                    }
+                                    else{
+                                        alreadyIssued.push(id);
+                                    }
+                                }).catch((err) => {
+                                    reject(uf.getResponseMessage("500"));
+                                }))
+                            }
+        
+                            Promise.all(promises).then(async () => {
+                                //add entry in reviewers for each toBeIssued
+                                if(toBeIssued.length > 0){
+                                    for(const userId of toBeIssued){
+                                        try {
+                                            await beginTransaction();
+
+                                            const result = await issueSingleReview(filmId);
+                                            const reviewId = result;
+
+                                            await addReviewerToReview(reviewId, userId);
+
+                                            createdReviews.push(new Review(filmId, reviewId, [userId], false));
+                                            await endTransaction();
+                                        } catch (err) {
+                                            await abortTransaction();
+                                            reject(uf.getResponseMessage("500"));
+                                        } 
+                                    }
+
+                                    let response = uf.getResponseMessage("201");
+                                    response["payload"] = createdReviews;
+                                    resolve(response);
                                 }
                                 else{
-                                    alreadyIssued.push(id);
+                                    reject(uf.getResponseMessage("409d"));
                                 }
-                            }).catch((err) => {
-                                reject(uf.getResponseMessage("500"));
-                            }))
+                            })
                         }
-    
-                        Promise.all(promises).then(async () => {
-                            //add entry in reviewers for each toBeIssued
-                            if(toBeIssued.length > 0){
-                                for(const userId of toBeIssued){
-                                    try {
-                                        await beginTransaction();
-
-                                        const result = await issueSingleReview(filmId);
-                                        const reviewId = result;
-
-                                        await addReviewerToReview(reviewId, userId);
-
-                                        createdReviews.push(new Review(filmId, reviewId, [userId], false));
-                                        await endTransaction();
-                                    } catch (err) {
-                                        await abortTransaction();
-                                        reject(uf.getResponseMessage("500"));
-                                    } 
-                                }
-
-                                let response = uf.getResponseMessage("201");
-                                response["payload"] = createdReviews;
-                                resolve(response);
-                            }
-                            else{
-                                reject(uf.getResponseMessage("409d"));
-                            }
-                        })
                     }
-                }
-                else{
-                    reject(uf.getResponseMessage("409e"))
-                }
-            });    
-        }
-      });
+                    else{
+                        reject(uf.getResponseMessage("409e"))
+                    }
+                });    
+            }
+        });
+    } catch(err){
+        reject(uf.getResponseMessage("500"));
+    }
   });
 }
 
@@ -513,49 +516,51 @@ const checkReviewersExistance = function(reviewers){
  **/
  exports.updateSingleReview = function(review, filmId, reviewId, userId) {
   return new Promise((resolve, reject) => {
-    //Checks if user is authorized to update review
-    console.log(filmId, reviewId, userId);
-      const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND id = ?";
-      db.all(sql1, [filmId, reviewId], async (err, rows) => {
-          if (err)
-              reject(uf.getResponseMessage("500"));
-          else if (rows.length === 0)
-              reject(uf.getResponseMessage("404"));
-          else {
-            let result = await checkIfUserIsReviewer(reviewId, userId);
-
-            if(result){
-                var sql2 = 'UPDATE reviews SET completed = ?';
-                var parameters = [review.completed];
-                if(review.reviewDate != undefined){
-                    sql2 = sql2.concat(', reviewDate = ?');
-                    parameters.push(review.reviewDate);
-                } 
-                if(review.rating != undefined){
-                    sql2 = sql2.concat(', rating = ?');
-                    parameters.push(review.rating);
-                } 
-                if(review.review != undefined){
-                    sql2 = sql2.concat(', review = ?');
-                    parameters.push(review.review);
-                } 
-                sql2 = sql2.concat(' WHERE filmId = ? AND id = ?');
-                parameters.push(filmId);
-                parameters.push(reviewId);
-
-                db.run(sql2, parameters, function(err) {
-                    if (err) {
-                        reject(uf.getResponseMessage("500"));
-                    } else {
-                        resolve(uf.getResponseMessage("204"));
-                    }
-                })
-            } 
+    try{
+        const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND id = ? AND type = ?";
+        db.all(sql1, [filmId, reviewId, "single"], async (err, rows) => {
+            if (err)
+                reject(uf.getResponseMessage("500"));
+            else if (rows.length === 0)
+                reject(uf.getResponseMessage("404"));
             else {
-                reject(uf.getResponseMessage("403c"));
+                let result = await exports.checkIfUserIsReviewer(reviewId, userId);
+
+                if(result){
+                    var sql2 = 'UPDATE reviews SET completed = ?';
+                    var parameters = [review.completed];
+                    if(review.reviewDate != undefined){
+                        sql2 = sql2.concat(', reviewDate = ?');
+                        parameters.push(review.reviewDate);
+                    } 
+                    if(review.rating != undefined){
+                        sql2 = sql2.concat(', rating = ?');
+                        parameters.push(review.rating);
+                    } 
+                    if(review.review != undefined){
+                        sql2 = sql2.concat(', review = ?');
+                        parameters.push(review.review);
+                    } 
+                    sql2 = sql2.concat(' WHERE filmId = ? AND id = ?');
+                    parameters.push(filmId);
+                    parameters.push(reviewId);
+
+                    db.run(sql2, parameters, function(err) {
+                        if (err) {
+                            reject(uf.getResponseMessage("500"));
+                        } else {
+                            resolve(uf.getResponseMessage("204"));
+                        }
+                    })
+                } 
+                else {
+                    reject(uf.getResponseMessage("403c"));
+                }
             }
-          }
-      });
+        });
+    } catch(err){
+        reject(uf.getResponseMessage("500"));
+    }
   });
 }
 
@@ -606,7 +611,7 @@ exports.updateReviewWithDraft = function(reviewId, draft){
 const createReview = function(review, reviewers) {
   var completedReview = (review.completed === 1) ? true : false;
   let reviewers_uri = []
-  
+
   for(const reviewer of reviewers){
     reviewers_uri.push({"userId": "api/users/"+reviewer.userId});
   }

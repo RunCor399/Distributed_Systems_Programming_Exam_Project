@@ -91,7 +91,7 @@ app.use(session({
 app.get('/api/films/public', filmController.getPublicFilms);
 app.post('/api/films', isLoggedIn, validate({ body: filmSchema }), filmController.createFilm);
 app.get('/api/films/private/:filmId', isLoggedIn, filmController.getSinglePrivateFilm);
-app.put('/api/films/private/:filmId', isLoggedIn, validate({ body: filmSchema }), filmController.updateSinglePrivateFilm);
+app.put('/api/films/private/:filmId', isLoggedIn, filmController.updateSinglePrivateFilm);
 app.delete('/api/films/private/:filmId', isLoggedIn, filmController.deleteSinglePrivateFilm);
 app.get('/api/films/public/invited', isLoggedIn, filmController.getInvitedFilms);
 app.get('/api/films/public/:filmId', filmController.getSinglePublicFilm);

@@ -12,7 +12,9 @@ passport.use(new LocalStrategy({
   passwordField: 'password'
 }, async function verify(username, password, done) {
   Users.getUserByEmail(username)
-          .then((user) => {
+          .then((response) => {
+              let user = undefined;
+              response !== undefined ? user = response[0]["payload"] : "";
               if (user === undefined) {
                 return done(null, false, { message: 'Unauthorized access.' });
               } else {
@@ -52,7 +54,9 @@ module.exports.authenticateUser = function authenticateUser (req, res, next) {
     } else {
       const email = req.user.email;
       Users.getUserByEmail(email)
-          .then((user) => {
+          .then((response) => {
+              let user = undefined;
+              response !== undefined ? user = response[0]["payload"] : "";
               if (user === undefined) {
                   utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': 'Unauthorized access.' }],}, 401);
               } else {
@@ -74,28 +78,21 @@ module.exports.authenticateUser = function authenticateUser (req, res, next) {
 module.exports.getUsers = function getUsers (req, res, next) {
   Users.getUsers()
     .then(function (response) {
-      if(!response){
-        utils.writeJson(res, response, 404);
-     } else {
-       utils.writeJson(res, response);
-    }
+       utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function (response) {
-      utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response }],}, 500);
+      utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response[0]["message"] }],}, response[0]["code"]);
     });
 };
 
 module.exports.getSingleUser = function getSingleUser (req, res, next) {
   Users.getUserById(req.params.userId)
     .then(function (response) {
-      if(!response){
-        utils.writeJson(res, response, 404);
-     } else {
-       utils.writeJson(res, response);
-    }
+       utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function (response) {
-      utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response }],}, 500);
+      console.log(response);
+      utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response[0]["message"] }],}, response[0]["code"]);
     });
 };
 

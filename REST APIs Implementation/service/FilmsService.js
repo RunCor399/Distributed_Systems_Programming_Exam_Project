@@ -98,8 +98,8 @@ const reviewsService = require('./ReviewsService');
 
               var sql3 = 'UPDATE films SET title = ?';
               var parameters = [film.title];
-              sql3 = sql3.concat(', private = ?');
-              parameters.push(film.private);
+            //   sql3 = sql3.concat(', private = ?');
+            //   parameters.push(film.private);
               if(film.watchDate != undefined){
                 sql3 = sql3.concat(', watchDate = ?');
                 parameters.push(film.watchDate);
@@ -222,8 +222,8 @@ const reviewsService = require('./ReviewsService');
             else {
               var sql3 = 'UPDATE films SET title = ?';
               var parameters = [film.title];
-              sql3 = sql3.concat(', private = ?');
-              parameters.push(film.private);
+            //   sql3 = sql3.concat(', private = ?');
+            //   parameters.push(film.private);
               sql3 = sql3.concat(' WHERE id = ?');
               parameters.push(filmId);
   
@@ -293,8 +293,7 @@ const reviewsService = require('./ReviewsService');
           }
       });
     } catch (err){
-        console.log(err);
-        reject(err);
+        reject(uf.getResponseMessage("500"));
     }
   });
 }

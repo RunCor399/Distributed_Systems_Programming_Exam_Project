@@ -14,11 +14,6 @@
         "type": "string",
         "description": "textual title of the film"
       },
-      "private": {
-        "type": "boolean",
-        "description": "true if only the film data structure owner can have access to it, false otherwise",
-        "default": "true"
-      },  
       "watchDate": {
         "type": "string",
         "format": "date",
@@ -36,23 +31,6 @@
         "default": "false"
       }
     },
-    "required": ["title", "watchDate", "rating", "favorite"],
-    "dependencies": {
-      "watchDate": {
-        "properties": {
-          "private": { "const": true }
-        }
-      },
-      "rating": {
-        "properties": {
-          "private": { "const": true }
-        }
-      },
-      "favorite": {
-        "properties": {
-          "private": { "const": true }
-        }
-      }
-    }
+    "required": ["title", "watchDate", "rating", "favorite"]
   }
   
