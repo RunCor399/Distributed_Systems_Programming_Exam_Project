@@ -3,7 +3,9 @@
 const Film = require('../components/film');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
-const uf = require('./UtilFunctions')
+const uf = require('./UtilFunctions');
+const draftsService = require('./DraftsService');
+const reviewsService = require('./ReviewsService');
 
 /**
  * Create a new film
@@ -20,10 +22,13 @@ const uf = require('./UtilFunctions')
       const sql = 'INSERT INTO films(title, owner, private, watchDate, rating, favorite) VALUES(?,?,?,?,?,?)';
       db.run(sql, [film.title, owner, film.private, film.watchDate, film.rating, film.favorite], function(err) {
           if (err) {
-              reject(err);
+              reject(uf.getResponseMessage("500"));
           } else {
               var createdFilm = new Film(this.lastID, film.title, owner, film.private, film.watchDate, film.rating, film.favorite);
-              resolve(createdFilm);
+              let response = uf.getResponseMessage("201")
+              response[0]["payload"] = createdFilm;
+
+              resolve(response);
           }
       });
   });
@@ -42,20 +47,23 @@ const uf = require('./UtilFunctions')
  **/
  exports.getSinglePrivateFilm = function(filmId, owner) {
     return new Promise((resolve, reject) => {
-        const sql1 = "SELECT id as fid, title, owner, private, watchDate, rating, favorite FROM films WHERE id = ?";
+        const sql1 = "SELECT id, title, owner, private, watchDate, rating, favorite FROM films WHERE id = ?";
         db.all(sql1, [filmId], (err, rows) => {
             if (err)
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             else if (rows.length === 0)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if (rows[0].private == 0)    
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if (rows[0].owner == owner){
                 var film = createFilm(rows[0]);
-                resolve(film);
+                let response = uf.getResponseMessage("200");
+                response[0]["payload"] = film;
+                
+                resolve(response);
             }
             else
-                reject(403);
+                reject(uf.getResponseMessage("403a"));
         });
     });
   }
@@ -80,11 +88,11 @@ const uf = require('./UtilFunctions')
             if (err)
                 reject(err);
             else if (rows.length === 0)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if (rows[0].private == 0)
-                reject(409)
+                reject(uf.getResponseMessage("409a"))
             else if(owner != rows[0].owner) {
-                reject(403);
+                reject(uf.getResponseMessage("403a"));
             }
             else {
 
@@ -109,9 +117,10 @@ const uf = require('./UtilFunctions')
   
               db.run(sql3, parameters, function(err) {
                 if (err) {
-                reject(err);
-                } else {
-                resolve(null);
+                    reject(uf.getResponseMessage("500"));
+                } 
+                else {
+                    resolve(uf.getResponseMessage("204"));
               }
              })
             }
@@ -134,19 +143,19 @@ const uf = require('./UtilFunctions')
         const sql1 = "SELECT owner FROM films f WHERE f.id = ? AND f.private = 1";
         db.all(sql1, [filmId], (err, rows) => {
             if (err)
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             else if (rows.length === 0)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if(owner != rows[0].owner) {
-                reject(403);
+                reject(uf.getResponseMessage("403a"));
             }
             else {
                 const sql3 = 'DELETE FROM films WHERE id = ?';
                 db.run(sql3, [filmId], (err) => {
                     if (err)
-                         reject(err);
+                         reject(uf.getResponseMessage("500"));
                      else
-                        resolve(null);
+                        resolve(uf.getResponseMessage("204"));
                 })
             }
         });
@@ -165,17 +174,20 @@ const uf = require('./UtilFunctions')
  **/
  exports.getSinglePublicFilm = function(filmId) {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id as fid, title, owner, private, watchDate, rating, favorite FROM films WHERE id = ?";
+        const sql = "SELECT id as id, title, owner, private, watchDate, rating, favorite FROM films WHERE id = ?";
         db.all(sql, [filmId], (err, rows) => {
             if (err)
                 reject(err);
             else if (rows.length === 0)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if (rows[0].private == 1)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else {
                 var film = createFilm(rows[0]);
-                resolve(film);
+                let response = uf.getResponseMessage("200");
+                response[0]["payload"] = film;
+
+                resolve(response);
             }
         });
     });
@@ -199,13 +211,13 @@ const uf = require('./UtilFunctions')
         const sql1 = "SELECT owner, private FROM films f WHERE f.id = ?";
         db.all(sql1, [filmId], (err, rows) => {
             if (err)
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             else if (rows.length === 0)
-                reject(404);
+                reject(uf.getResponseMessage("404"));
             else if (rows[0].private == 1)
-                reject(409);
+                reject(uf.getResponseMessage("409a"));
             else if(owner != rows[0].owner) {
-                reject(403);
+                reject(uf.getResponseMessage("403a"));
             }
             else {
               var sql3 = 'UPDATE films SET title = ?';
@@ -217,9 +229,9 @@ const uf = require('./UtilFunctions')
   
               db.run(sql3, parameters, function(err) {
                 if (err) {
-                reject(err);
+                reject(uf.getResponseMessage("500"));
                 } else {
-                resolve(null);
+                resolve(uf.getResponseMessage("204"));
               }
              })
             }
@@ -240,34 +252,50 @@ const uf = require('./UtilFunctions')
  **/
  exports.deleteSinglePublicFilm = function(filmId, owner) {
   return new Promise((resolve, reject) => {
-      const sql1 = "SELECT owner FROM films f WHERE f.id = ?";
-      db.all(sql1, [filmId], (err, rows) => {
-          if (err)
-              reject(err);
+    try{
+      const sql1 = "SELECT owner, private FROM films f WHERE f.id = ?";
+      db.all(sql1, [filmId], async (err, rows) => {
+          if (err){
+              console.log(err);
+              reject(uf.getResponseMessage("500"));
+          }
           else if (rows.length === 0)
-              reject(404);
+              reject(uf.getResponseMessage("404"));
           else if(rows[0].private == 1)
-            reject(404);
+            reject(uf.getResponseMessage("404"));
           else if(owner != rows[0].owner) {
-              reject(403);
+              reject(uf.getResponseMessage("403a"));
           }
           else {
-              const sql2 = 'DELETE FROM reviews WHERE filmId = ?';
-              db.run(sql2, [filmId], (err) => {
-                  if (err)
-                      reject(err);
+              let reviewIds = await reviewsService.getReviewIdsByFilm(filmId);
+
+              for(const reviewId of reviewIds){
+                await draftsService.deleteDraftsAndVotesOfReview(reviewId.id)
+                await reviewsService.deleteReviewers(reviewId.id);
+              }
+              
+              const sql3 = 'DELETE FROM reviews WHERE filmId = ?';
+              db.run(sql3, [filmId], (err) => {
+                  if (err){
+                    console.log(err);
+                    reject(uf.getResponseMessage("500"));
+                  }
                   else {
                       const sql3 = 'DELETE FROM films WHERE id = ?';
                       db.run(sql3, [filmId], (err) => {
                           if (err)
-                              reject(err);
+                              reject(uf.getResponseMessage("500"));
                           else
-                              resolve(null);
+                              resolve(uf.getResponseMessage("204"));
                       })
                   }
               })
           }
       });
+    } catch (err){
+        console.log(err);
+        reject(err);
+    }
   });
 }
 
@@ -285,16 +313,19 @@ const uf = require('./UtilFunctions')
  exports.getPublicFilms = function(req) {
   return new Promise((resolve, reject) => {
 
-    var sql = "SELECT f.id as fid, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, (SELECT count(*) total_rows FROM films l WHERE l.private=0) c WHERE  f.private = 0 "
+    var sql = "SELECT f.id as id, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, (SELECT count(*) total_rows FROM films l WHERE l.private=0) c WHERE  f.private = 0 "
     var limits = getPagination(req);
     if (limits.length != 0) sql = sql + " LIMIT ?,?";
 
     db.all(sql, limits, (err, rows) => {
         if (err) {
-            reject(err);
+            reject(uf.getResponseMessage("500"));
         } else {
             let films = rows.map((row) => createFilm(row));
-            resolve(films);
+            let response = uf.getResponseMessage("200");
+            response[0]["payload"] = films;
+            
+            resolve(response);
         }
     });
   });
@@ -321,10 +352,14 @@ const uf = require('./UtilFunctions')
   
       db.all(sql, limits, (err, rows) => {
           if (err) {
-              reject(err);
+              reject(uf.getResponseMessage("500"));
           } else {
               let films = rows.map((row) => createFilm(row));
-              resolve(films);
+              let response = uf.getResponseMessage("200");
+              console.log(films);
+              response[0]["payload"] = films;
+
+              resolve(response);
           }
       });
     });
@@ -341,17 +376,19 @@ const uf = require('./UtilFunctions')
  **/
  exports.getPrivateFilms = function(req) {
     return new Promise((resolve, reject) => {
-        var sql = "SELECT f.id as fid, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, (SELECT count(*) total_rows FROM films l WHERE l.private=1 AND owner = ?) c WHERE  f.private = 1 AND owner = ?"
+        var sql = "SELECT f.id as id, f.title, f.owner, f.private, f.watchDate, f.rating, f.favorite, c.total_rows FROM films f, (SELECT count(*) total_rows FROM films l WHERE l.private=1 AND owner = ?) c WHERE  f.private = 1 AND owner = ?"
         var limits = getPagination(req);
         if (limits.length != 0) sql = sql + " LIMIT ?,?";
         var parameters = [req.user.id, req.user.id];
         parameters = parameters.concat(limits);
         db.all(sql, parameters, (err, rows) => {
             if (err) {
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             } else {
                 let films = rows.map((row) => createFilm(row));
-                resolve(films);
+                let response = uf.getResponseMessage("200");
+                response[0]["payload"] = films;
+                resolve(response);
             }
         });
     });

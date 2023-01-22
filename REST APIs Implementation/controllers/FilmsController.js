@@ -22,31 +22,31 @@ module.exports.getPublicFilms = function getPublicFilms (req, res, next) {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: {}
+                        films: []
                     });
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: response
+                        films: response[0]["payload"]
                     });
                 } else {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: response,
+                        films: response[0]["payload"],
                         next: "/api/films/public?pageNo=" + next
                     });
                 }
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 500);
         });
         })
         .catch(function(response) {
-          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 500);
       });
   
   
@@ -71,31 +71,31 @@ module.exports.getPublicFilms = function getPublicFilms (req, res, next) {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: {}
+                        films: []
                     });
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: response
+                        films: response[0]["payload"]
                     });
                 } else {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: response,
+                        films: response[0]["payload"],
                         next: "/api/films/public/invited?pageNo=" + next
                     });
                 }
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
         })
         .catch(function(response) {
-          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
       });
   
   
@@ -120,31 +120,31 @@ module.exports.getPublicFilms = function getPublicFilms (req, res, next) {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfFilms,
-                        films: {}
+                        films: []
                     });
                   } else if (pageNo == totalPage) {
                       utils.writeJson(res, {
                           totalPages: totalPage,
                           currentPage: pageNo,
                           totalItems: numOfFilms,
-                          films: response
+                          films: response[0]["payload"]
                       });
                   } else {
                       utils.writeJson(res, {
                           totalPages: totalPage,
                           currentPage: pageNo,
                           totalItems: numOfFilms,
-                          films: response,
-                          next: "/api/films/" + req.params.userId + "/films/private?pageNo=" + next
+                          films: response[0]["payload"],
+                          next: "/api/films/private?pageNo=" + next
                       });
                   }
           })
           .catch(function(response) {
-              utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+              utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
           });
           })
           .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
     };
   
@@ -155,70 +155,40 @@ module.exports.createFilm = function createFilm (req, res, next) {
     var owner = req.user.id;
     Films.createFilm(film, owner)
         .then(function(response) {
-            utils.writeJson(res, response, 201);
+            utils.writeJson(res, {'param': 'Server', 'msg': response[0]["message"]}, response[0]["code"]);
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
   };
 
 module.exports.getSinglePrivateFilm = function getSinglePrivateFilm (req, res, next) {
     Films.getSinglePrivateFilm(req.params.filmId, req.user.id)
           .then(function(response) {
-              utils.writeJson(res, response);
+              utils.writeJson(res, response[0]["payload"], response[0]["code"]);
           })
           .catch(function(response) {
-              if(response == 403){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film.' }], }, 403);
-              }
-              else if (response == 404){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-              }
-              else {
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-              }
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
           });
   };
 
 module.exports.updateSinglePrivateFilm = function updateSinglePrivateFilm (req, res, next) {
     Films.updateSinglePrivateFilm(req.body, req.params.filmId, req.user.id)
     .then(function(response) {
-        utils.writeJson(res, response, 204);
+        utils.writeJson(res, response[0]["message"], response[0]["code"]);
     })
     .catch(function(response) {
-        if(response == 403){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-        }
-        else if (response == 404){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-        }
-        else if (response == 409){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The visibility of the film cannot be changed.' }], }, 409);
-        }
-        else {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-        }
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
   };
 
 module.exports.deleteSinglePrivateFilm = function deleteSinglePrivateFilm (req, res, next) {
   Films.deleteSinglePrivateFilm(req.params.filmId, req.user.id)
         .then(function(response) {
-            utils.writeJson(res, response, 204);
+            utils.writeJson(res, response[0]["message"], response[0]["code"]);
         })
-        .catch(function(response) {S
-            if(response == 403){
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-            }
-            else if (response == 404){
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-            }
-            else if (response == 409){
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The visibility of the film cannot be changed.' }], }, 409);
-            }
-            else {
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-            }
+        .catch(function(response) {
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
 };
 
@@ -227,51 +197,30 @@ module.exports.deleteSinglePrivateFilm = function deleteSinglePrivateFilm (req, 
 module.exports.getSinglePublicFilm = function getSinglePublicFilm (req, res, next) {
     Films.getSinglePublicFilm(req.params.filmId)
     .then(function(response) {
-        utils.writeJson(res, response);
+        utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function(response) {
-        if (response == 404){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-        }
-        else {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-        }
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
 };
 
 module.exports.updateSinglePublicFilm = function updateSinglePublicFilm (req, res, next) {
     Films.updateSinglePublicFilm(req.body, req.params.filmId, req.user.id)
     .then(function(response) {
-        utils.writeJson(res, response, 204);
+        utils.writeJson(res, response[0]["message"], response[0]["code"]);
     })
     .catch(function(response) {
-        if(response == 403){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-        }
-        else if (response == 404){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-        }
-        else {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-        }
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
   };
 
   module.exports.deleteSinglePublicFilm = function deleteSinglePublicFilm (req, res, next) {
     Films.deleteSinglePublicFilm(req.params.filmId, req.user.id)
           .then(function(response) {
-              utils.writeJson(res, response, 204);
+            utils.writeJson(res, response[0]["message"], response[0]["code"]);
           })
-          .catch(function(response) {S
-              if(response == 403){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-              }
-              else if (response == 404){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The film does not exist.' }], }, 404);
-              }
-              else {
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-              }
+          .catch(function(response) {
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
           });
   };
   

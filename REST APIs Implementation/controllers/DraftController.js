@@ -25,49 +25,41 @@ module.exports.getDrafts = function getDrafts(req, res, next){
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        drafts: {}
+                        drafts: []
                     });
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        drafts: response
+                        drafts: response[0]["payload"]
                     });
                 } else {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfDrafts,
-                        drafts: response,
+                        drafts: response[0]["payload"],
                         next: "/api/films/public/"+ filmId +"/reviews/"+ reviewId +"/drafts?pageNo=" + next
                     });
                 }
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 500);
         });
         })
         .catch(function(response) {
-          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 500);
       });
 }
 
 module.exports.getSingleDraft = function getSingleDraft(req, res, next){
     Drafts.getSingleDraft(req.params.filmId, req.params.reviewId, req.user.id, req.params.draftId)
           .then(function(response) {
-              utils.writeJson(res, response);
+              utils.writeJson(res, response[0]["payload"]);
           })
           .catch(function(response) {
-              if(response == 403){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not a reviewer' }], }, 403);
-              }
-              else if (response == 404){
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The draft does not exist.' }], }, 404);
-              }
-              else {
-                  utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-              }
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 403);
           });
 }
 
@@ -79,10 +71,10 @@ module.exports.createDraft = function createDraft(req, res, next){
 
     Drafts.createDraft(filmId, reviewId, userId, draft)
         .then(function(response) {
-            utils.writeJson(res, response, 201);
+            utils.writeJson(res, response[0]["payload"], response[0]["code"]);
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, 500);
         });
 }
 
@@ -97,7 +89,6 @@ module.exports.voteDraft = async function voteDraft(req, res, next){
         }
         
     } catch(err){
-        console.log("dd:", err);
         utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': err }], }, 500);
     }
 

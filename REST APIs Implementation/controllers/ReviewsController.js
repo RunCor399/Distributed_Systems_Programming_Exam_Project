@@ -21,30 +21,30 @@ module.exports.getFilmReviews = function getFilmReviews (req, res, next) {
                 var totalPage=Math.ceil(numOfReviews / constants.OFFSET);
                 next = Number(pageNo) + 1;
                 if (pageNo>totalPage) {
-                    utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': "The page does not exist." }], }, 404);
+                    utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"]}], }, response[0]["code"]);
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfReviews,
-                        reviews: response
+                        reviews: response[0]["payload"]
                     });
                 } else {
                     utils.writeJson(res, {
                         totalPages: totalPage,
                         currentPage: pageNo,
                         totalItems: numOfReviews,
-                        reviews: response,
+                        reviews: response[0]["payload"],
                         next: "/api/films/public/"+req.params.filmId+"/reviews?pageNo=" + next
                     });
                 }
         })
         .catch(function(response) {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
         })
         .catch(function(response) {
-          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
+          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
       });
   
 };
@@ -54,15 +54,10 @@ module.exports.getSingleReview = function getSingleReview (req, res, next) {
 
     Reviews.getSingleReview(req.params.filmId, req.params.reviewId)
         .then(function(response) {
-            utils.writeJson(res, response);
+            utils.writeJson(res, response[0]["payload"]);
         })
         .catch(function(response) {
-            if (response == 404){
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The review does not exist.' }], }, 404);
-            }
-            else {
-                utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-            }
+          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
         });
 };
 
@@ -71,21 +66,10 @@ module.exports.deleteSingleReview = function deleteSingleReview (req, res, next)
 
   Reviews.deleteSingleReview(req.params.filmId, req.params.reviewId, req.user.id)
     .then(function (response) {
-      utils.writeJson(res, response, 204);
+      utils.writeJson(res, response[0]["message"], response[0]["code"]);
     })
     .catch(function (response) {
-      if(response == "403A"){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-      }
-      else if(response == "403B"){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The review has been already completed, so the invitation cannot be deleted anymore.' }], }, 403);
-      }
-      else if (response == 404){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The review does not exist.' }], }, 404);
-      }
-      else {
-        utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response }],}, 500);
-      }
+      utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
 };
 
@@ -97,34 +81,15 @@ module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
   else {
     Reviews.issueFilmReview(req.body, req.user.id)
     .then(function (response) {
-      utils.writeJson(res, response, 201);
+      utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function (response) {
-      if(response == 403){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not the owner of the film' }], }, 403);
-      }
-      else if (response == 404){
-          utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The public film does not exist.' }], }, 404);
-      }
-      else if (response == 409){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user with ID reviewerId does not exist.' }], }, 409);
-      }
-      else if (response == 410){ //status code to be modified 
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is already associated with a single review for this film' }], }, 410);
-      }
-      else {
-          utils.writeJson(res, {errors: [{ 'param': 'Server', 'msg': response }],}, 500);
-      }
+      utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
   }
 };
 
 module.exports.updateSingleReview = function updateSingleReview (req, res, next) {
-  
-  // if(req.params.reviewerId != req.user.id)
-  // {
-  //   utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The reviewerId is not equal the id of the requesting user.' }], }, 400);
-  // }
   if(req.body.completed == undefined) {
     utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The completed property is absent.' }], }, 400);
   }
@@ -134,18 +99,10 @@ module.exports.updateSingleReview = function updateSingleReview (req, res, next)
   else {
     Reviews.updateSingleReview(req.body, req.params.filmId, req.params.reviewId, req.user.id)
     .then(function(response) {
-        utils.writeJson(res, response, 204);
+        utils.writeJson(res, response[0]["message"], response[0]["code"]);
     })
     .catch(function(response) {
-        if(response == 403){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The user is not a reviewer of the film' }], }, 403);
-        }
-        else if (response == 404){
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The review does not exist.' }], }, 404);
-        }
-        else {
-            utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response }], }, 500);
-        }
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
   }
 };

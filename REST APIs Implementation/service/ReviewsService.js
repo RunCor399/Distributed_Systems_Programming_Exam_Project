@@ -6,6 +6,7 @@ var usersService = require('./UsersService');
 const db = require('../components/db');
 var constants = require('../utils/constants.js');
 let uf = require('./UtilFunctions');
+const { deleteDraftsAndVotesOfReview } = require('./DraftsService');
 
 /**
  * Retrieve the reviews of the film with ID filmId
@@ -23,8 +24,7 @@ let uf = require('./UtilFunctions');
       if (params.length != 2) sql = sql + " LIMIT ?,?";
       db.all(sql, params, (err, rows) => {
           if (err) {
-                console.log(err);
-                reject(err);
+                reject(uf.getResponseMessage("500"));
           } else {
                 //console.log(rows);
                 //let reviews = rows.map((row) => createReview(row));
@@ -40,7 +40,10 @@ let uf = require('./UtilFunctions');
                 }
 
                 Promise.all(promises).then(() => {
-                    resolve(complete_reviews)
+                    let response = uf.getResponseMessage("200");
+                    response["payload"] = complete_reviews;
+
+                    resolve(response)
                 });
           }
       });
@@ -53,10 +56,13 @@ const getFilmReviewers = function(reviewId){
 
         db.all(sql, [reviewId], (err, rows) => {
             if(err){
-                reject(err);
+                reject(uf.getResponseMessage("500"));
             }
             else{
-                resolve(rows)
+                let response = uf.getResponseMessage("200");
+                response["payload"] = rows;
+                
+                resolve(response)
             }
         });
     });
@@ -103,12 +109,16 @@ const getFilmReviewers = function(reviewId){
       console.log(filmId, reviewId);
       db.all(sql, [reviewId, filmId], (err, rows) => {
           if (err)
-              reject(err);
+              reject(uf.getResponseMessage("500"));
           else if (rows.length === 0)
-              reject(404);
+              reject(uf.getResponseMessage("404"));
           else {
               getFilmReviewers(reviewId).then((reviewers) => {
-                resolve(createReview(rows[0], reviewers))
+                let complete_review = createReview(rows[0], reviewers);
+                let response = uf.getResponseMessage("200");
+                response["payload"] = complete_review;
+
+                resolve(response)
               });
           }
       });
@@ -133,31 +143,32 @@ const getFilmReviewers = function(reviewId){
         await beginTransaction();
         
         let result = await deleteReviewers(reviewId);
+        await deleteDraftsAndVotesOfReview(reviewId);
 
         if(result){
             const sql1 = "SELECT F.owner AS owner, R.completed AS completed FROM films F, reviews R WHERE F.id = R.filmId AND F.id = ? AND R.id = ?";
             db.all(sql1, [filmId, reviewId], (err, rows) => {
                 if (err){
                     console.log(err);
-                    reject(err);
+                    reject(uf.getResponseMessage("500"));
                 }
                 else if (rows.length === 0)
-                    reject(404);
+                    reject(uf.getResponseMessage("404"));
                 else if(userId != rows[0].owner) {
-                    reject("403A");
+                    reject(uf.getResponseMessage("403a"));
                 }
                 else if(rows[0].completed == 1) {
-                    reject("403B");
+                    reject(uf.getResponseMessage("403b"));
                 }
                 else {
                     const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND id = ?';
                     db.run(sql2, [filmId, reviewId], (err) => {
                         if (err){
                             console.log(err);
-                            reject(err);
+                            reject(uf.getResponseMessage("500"));
                         }
                         else
-                            resolve(null);
+                            resolve(uf.getResponseMessage("204"));
                     })
                 }
             });
@@ -172,7 +183,7 @@ const getFilmReviewers = function(reviewId){
 
 }
 
-const deleteReviewers = function(reviewId){
+exports.deleteReviewers = function(reviewId){
     return new Promise((resolve, reject) => {
         const sql = "DELETE FROM reviewers WHERE reviewId = ?";
         db.run(sql, [reviewId], (err) => {
@@ -209,21 +220,19 @@ const deleteReviewers = function(reviewId){
       const sql1 = "SELECT owner, private FROM films WHERE id = ?";
       db.all(sql1, [filmId], (err, rows) => {
           if (err){
-                reject(err);
+                reject(uf.getResponseMessage("500"));
           }
           else if (rows.length === 0){
-              reject(404);
+              reject(uf.getResponseMessage("404"));
           }
           else if(owner != rows[0].owner) {
-              reject(403);
+              reject(uf.getResponseMessage("403a"));
           } else if(rows[0].private == 1) {
-              reject(404);
+              reject(uf.getResponseMessage("404"));
           }
           else {
-            let reviewersExist;
             checkReviewersExistance(reviewers).then((reviewersExist) => {
                 if(reviewersExist){
-                    console.log("h");
                     if (review_type === "coop" && reviewers.length > 1){
                         let reviewId;
     
@@ -233,15 +242,18 @@ const deleteReviewers = function(reviewId){
                                 reviewId = result;
                                 endTransaction().then(() => {
                                     let createdReview = new Review(filmId, reviewId, reviewers, false);
-                                    resolve(createdReview);
+                                    let response = uf.getResponseMessage("201");
+                                    response["payload"] = createdReview;
+
+                                    resolve(response);
                                 }).catch(() => {
-                                    reject('500');
+                                    reject(uf.getResponseMessage("500"));
                                 })
                             }).catch(() => {
-                                reject('coop review couldnt be sent');
+                                reject(uf.getResponseMessage("409c"));
                             })
                         }).catch(() => {
-                            reject('500');
+                            reject(uf.getResponseMessage("500"));
                         })
                         
                     }
@@ -262,7 +274,7 @@ const deleteReviewers = function(reviewId){
                                     alreadyIssued.push(id);
                                 }
                             }).catch((err) => {
-                                reject(err);
+                                reject(uf.getResponseMessage("500"));
                             }))
                         }
     
@@ -282,26 +294,44 @@ const deleteReviewers = function(reviewId){
                                         await endTransaction();
                                     } catch (err) {
                                         await abortTransaction();
-                                        reject(err);
+                                        reject(uf.getResponseMessage("500"));
                                     } 
                                 }
 
-                                resolve(createdReviews);
+                                let response = uf.getResponseMessage("201");
+                                response["payload"] = createdReviews;
+                                resolve(response);
                             }
                             else{
-                                // no review assigned
-                                reject(410);
+                                reject(uf.getResponseMessage("409d"));
                             }
                         })
                     }
                 }
                 else{
-                    reject(409)
+                    reject(uf.getResponseMessage("409e"))
                 }
             });    
         }
       });
   });
+}
+
+exports.getReviewIdsByFilm = function(filmId){
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT id FROM reviews WHERE filmId = ?";
+        
+        db.all(sql, [filmId], (err, rows) => {
+            if(err){
+                reject(uf.getResponseMessage("500"));
+            }
+            else{
+                let response = uf.getResponseMessage("200");
+                response["payload"] = rows; 
+                resolve(response);
+            }
+        })
+    })
 }
 
 //Checks if a user that was invited to "single review" a film, was already invited to review that film
@@ -488,9 +518,9 @@ const checkReviewersExistance = function(reviewers){
       const sql1 = "SELECT * FROM reviews WHERE filmId = ? AND id = ?";
       db.all(sql1, [filmId, reviewId], async (err, rows) => {
           if (err)
-              reject(err);
+              reject(uf.getResponseMessage("500"));
           else if (rows.length === 0)
-              reject(404);
+              reject(uf.getResponseMessage("404"));
           else {
             let result = await checkIfUserIsReviewer(reviewId, userId);
 
@@ -515,14 +545,14 @@ const checkReviewersExistance = function(reviewers){
 
                 db.run(sql2, parameters, function(err) {
                     if (err) {
-                        reject(err);
+                        reject(uf.getResponseMessage("500"));
                     } else {
-                        resolve(null);
+                        resolve(uf.getResponseMessage("204"));
                     }
                 })
             } 
             else {
-                reject(403);
+                reject(uf.getResponseMessage("403c"));
             }
           }
       });
