@@ -9,17 +9,18 @@ module.exports.getDrafts = function getDrafts(req, res, next){
     let filmId = req.params.filmId;
     let reviewId = req.params.reviewId;
 
-    //Check if user is a reviewer
-
+    console.log("call");
     Drafts.getTotalDrafts(filmId, reviewId)
         .then(function(response) {
             numOfDrafts = response;
+
             Drafts.getDrafts(req)
             .then(function(response) {
                 if (req.query.pageNo == null) var pageNo = 1;
                 else var pageNo = req.query.pageNo;
                 var totalPage=Math.ceil(numOfDrafts / constants.OFFSET);
                 next = Number(pageNo) + 1;
+
                 if (pageNo>totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
@@ -89,7 +90,7 @@ module.exports.voteDraft = async function voteDraft(req, res, next){
         }
         
     } catch(err){
-        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': err }], }, 500);
+        utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': err[0].message }], }, err[0].code);
     }
 
     

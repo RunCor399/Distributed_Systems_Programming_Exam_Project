@@ -18,7 +18,7 @@ exports.getTotalDrafts = function(filmId, reviewId){
                 }
             });
         } catch(err){
-            reject(uf.getResponseMessage("500"))
+            reject(err)
         }
     });
 }
@@ -30,23 +30,27 @@ exports.getDrafts = function(req){
             let reviewId = req.params.reviewId;
             let userId = req.user.id;
 
+
             let check1 = await uf.filmExists(filmId);
             let check2 = await uf.reviewExist(reviewId);
-            let check3 = await checkPermissions(reviewId, userId);
-
-            if(check1 && check2 && check3){
-                let sql = `SELECT id AS draftId, reviewId AS reviewId, userId AS author, rating, review, status
-                        FROM drafts`;
+            let check3 = await checkReviewIsCooperative(reviewId, true);
+            let check4 = await checkPermissions(reviewId, userId);
+            
+            if(check1 && check2 && check3 && check4){
+                console.log("checks passed");
+                let sql = `SELECT D.id AS draftId, D.reviewId AS reviewId, D.userId AS author, D.rating, D.review, D.status
+                        FROM drafts D, reviews R, films F WHERE F.id = R.filmId AND R.id = D.reviewId AND F.id = ? AND R.id = ?`;
 
                 let params = getPagination(req)
                 if (params.length == 2) sql = sql + " LIMIT ?,?";
+                params.unshift(reviewId);
+                params.unshift(filmId);
 
                 db.all(sql, params, async (err, rows) => {
                     if(err){
                         reject(uf.getResponseMessage("500"));
                     }
                     else{
-                        console.log(rows);
                         let complete_drafts = [];
 
                         for(const draft of rows){
@@ -55,12 +59,25 @@ exports.getDrafts = function(req){
                             complete_drafts.push(complete_draft);
                         }
 
-                        let response = uf.getResponseMessage("200");
-                        response["payload"] = complete_drafts;
 
+                        let response = uf.getResponseMessage("200");
+                        response[0]["payload"] = complete_drafts;
+                        console.log(response);
                         resolve(response);
                     }
                 })
+            }
+            else if(!check1){
+                reject(uf.getResponseMessage("409f"));
+            }
+            else if(!check2){
+                reject(uf.getResponseMessage("409g"));
+            }
+            else if(!check3){
+                reject(uf.getResponseMessage("409l"));
+            }
+            else if(!check4){
+                reject(uf.getResponseMessage("409b"));
             }
         } catch(err){
             reject(uf.getResponseMessage("500"));
@@ -71,14 +88,17 @@ exports.getDrafts = function(req){
 exports.getSingleDraft = function(filmId, reviewId, userId, draftId){
     return new Promise(async (resolve, reject) => {
         try{
-            let check1 = await checkPermissions(reviewId, userId);
+            let check1 = await uf.filmExists(filmId);
             let check2 = await uf.reviewExist(reviewId);
+            let check3 = await checkReviewIsCooperative(reviewId, true);
+            let check4 = await checkPermissions(reviewId, userId);
 
-            if(check1 && check2){
-                let sql = `SELECT id AS draftId, reviewId AS reviewId, userId AS author, rating, review, status
-                        FROM drafts WHERE id = ?`;
+            console.log(check1, check2, check3, check4);
+            if(check1 && check2 && check3 && check4){
+                let sql = `SELECT D.id AS draftId, D.reviewId AS reviewId, D.userId AS author, D.rating, D.review, D.status
+                        FROM drafts D, reviews R, films F WHERE D.id = ? AND D.reviewId = R.id AND R.filmId = F.id AND F.id = ? AND R.id = ?`;
 
-                db.get(sql, [draftId], async (err, draft) => {
+                db.get(sql, [draftId, filmId, reviewId], async (err, draft) => {
                     if(err){
                         console.log(err);
                         reject(uf.getResponseMessage("500"));
@@ -90,7 +110,7 @@ exports.getSingleDraft = function(filmId, reviewId, userId, draftId){
                             let complete_draft = createDraft(filmId, draft, votes);
                         
                             let response = uf.getResponseMessage("200");
-                            response["payload"] = complete_draft;
+                            response[0]["payload"] = complete_draft;
 
                             resolve(response);
                         }
@@ -100,6 +120,18 @@ exports.getSingleDraft = function(filmId, reviewId, userId, draftId){
                         
                     }
                 })      
+            }
+            else if(!check1){
+                reject(uf.getResponseMessage("409f"))
+            }
+            else if(!check2){
+                reject(uf.getResponseMessage("409g"))
+            }
+            else if(!check3){
+                reject(uf.getResponseMessage("409l"))
+            }
+            else if(!check4){
+                reject(uf.getResponseMessage("409b"))
             }
     } catch(err){
         reject(uf.getResponseMessage("500"));
@@ -131,7 +163,7 @@ exports.createDraft = function(filmId, reviewId, userId, draft){
                             let implicitVote = {"userId": userId, "vote": true};
                             let createdDraft = new Draft(lastID, filmId, reviewId, [implicitVote], draft.rating, draft.review, 'open', userId);
                             let response = uf.getResponseMessage("201");
-                            response["payload"] = createdDraft;
+                            response[0]["payload"] = createdDraft;
 
                             resolve(response);
                         }
@@ -174,7 +206,7 @@ exports.voteDraft = function voteDraft(req, res, next){
 
             let check1 = await uf.filmExists(filmId);
             let check2 = await uf.reviewExist(reviewId);
-            let check3 = await uf.draftExistAndOpen(draftId);
+            let check3 = await uf.draftExistAndOpen(draftId, filmId, reviewId);
             let check4 = await reviewsService.checkIfUserIsReviewer(reviewId, userId);
             let check5 = await checkSingleVote(draftId, userId);
 
@@ -182,7 +214,7 @@ exports.voteDraft = function voteDraft(req, res, next){
                 let reason;
                 let vote = req.body.vote;
 
-                vote === false ? reason = req.params.reason : null;
+                vote === false ? reason = req.body.reason : null;
     
                 await insertVote(draftId, userId, {"vote": vote, "reason": reason});
                 await evaluateVoteAction(draftId, reviewId, userId);
@@ -213,9 +245,13 @@ exports.voteDraft = function voteDraft(req, res, next){
 
 const checkPermissions = function(reviewId, userId){
     return new Promise(async (resolve, reject) => {
-        let result = await reviewsService.checkIfUserIsReviewer(reviewId, userId);
+        try{
+            let result = await reviewsService.checkIfUserIsReviewer(reviewId, userId);
 
-        resolve(result);
+            resolve(result);
+        } catch(err){
+            reject(err);
+        }
     })
 }
 
@@ -234,12 +270,20 @@ const checkDraftAlreadyOpen = function(reviewId){
     });
 }
 
-const checkReviewIsCooperative = function(reviewId){
+const checkReviewIsCooperative = function(reviewId, flag=false){
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id FROM reviews WHERE id = ? AND type = ? AND completed = ?";
+        let sql = "SELECT id FROM reviews WHERE id = ? AND type = ?";
+        let parameters = [reviewId, 'coop'];
 
-        db.get(sql, [reviewId, 'coop', false], (err, rows) => {
+        console.log(flag);
+        if(!flag){
+            sql += " AND completed = ?";
+            parameters.push(false);
+        }
+
+        db.get(sql, parameters, (err, rows) => {
             if(err){
+                console.log(err);
                 reject(err);
             }
             else{
@@ -306,42 +350,47 @@ const checkSingleVote = function(draftId, userId){
 
 const evaluateVoteAction = function(draftId, reviewId, userId){
     return new Promise(async (resolve, reject) => {
-        let reviewers_count = await uf.getReviewersCount(reviewId);
-        let voters_count = await uf.getNumVotesOfDraft(draftId);
+        try{
+            let reviewers_count = await uf.getReviewersCount(reviewId);
+            let voters_count = await uf.getNumVotesOfDraft(draftId);
 
-        if(reviewers_count === voters_count){
-            let agree_count = await getAgreeVotes(draftId);
+            if(reviewers_count === voters_count){
+                let agree_count = await getAgreeVotes(draftId);
 
-            if(agree_count === voters_count){
-                let closeDraftResult = await closeDraft(draftId);
+                if(agree_count === voters_count){
+                    let closeDraftResult = await closeDraft(draftId);
 
-                if(closeDraftResult){
-                    let draft = await getDraftData(draftId);
-
-                    if(draft === undefined){
-                        reject();
-                    }
-                    else{
-                        let updateReviewResult = await reviewsService.updateReviewWithDraft(reviewId, draft);
-
-                        if(updateReviewResult){
-                            resolve(true);
-                        }
-                        else{
+                    if(closeDraftResult){
+                        let draft = await getDraftData(draftId);
+                        console.log(draft)
+                        if(draft === undefined){
                             reject();
                         }
+                        else{
+                            let updateReviewResult = await reviewsService.updateReviewWithDraft(reviewId, draft);
+
+                            if(updateReviewResult){
+                                resolve(true);
+                            }
+                            else{
+                                reject();
+                            }
+                        }
+                    }
+                    else{
+                        reject();
                     }
                 }
                 else{
-                    reject();
+                    await closeDraft(draftId);
+                    resolve(true);
                 }
             }
             else{
-                await closeDraft(draftId);
+                resolve(true);
             }
-        }
-        else{
-            resolve(true);
+        } catch(err){
+            reject(err);
         }
     })
 }

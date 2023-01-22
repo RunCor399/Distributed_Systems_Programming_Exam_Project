@@ -54,7 +54,7 @@ const getFilmReviewers = function(reviewId){
 
         db.all(sql, [reviewId], (err, rows) => {
             if(err){
-                reject(uf.getResponseMessage("500"));
+                reject(err);
             }
             else{    
                 resolve(rows)
@@ -576,10 +576,10 @@ exports.checkIfUserIsReviewer = function(reviewId, userId){
 
 exports.updateReviewWithDraft = function(reviewId, draft){
     return new Promise((resolve, reject) => {
-        const sql = "UPDATE reviews SET completed = ?, reviewDate = ?, review = ?, rating = ?";
+        const sql = "UPDATE reviews SET completed = ?, reviewDate = ?, review = ?, rating = ? WHERE id = ?";
         let today = new Date();
         let date = today.toISOString().slice(0, 10);
-        db.run(sql, [true, date, draft.review, draft.rating], (err) => {
+        db.run(sql, [true, date, draft.review, draft.rating, reviewId], (err) => {
             if(err){
                 reject(err);
             }

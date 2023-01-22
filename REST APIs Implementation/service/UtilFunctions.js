@@ -20,10 +20,11 @@ const responseMessages = [
                         {id:"409e", code:409, message:"One or more of the reviewers doesn't exist"},
                         {id:"409f", code:409, message:"This film doesn't exist"},
                         {id:"409g", code:409, message:"This review doesn't exist"},
-                        {id:"409h", code:409, message:"This review isn't cooperative or is already completed"},
+                        {id:"409h", code:409, message:"This review isn't cooperative or it has already been completed"},
                         {id:"409i", code:409, message:"There is a draft already open for this review"},
                         {id:"409j", code:409, message:"This draft doesn't exist or it has already been closed"},
                         {id:"409k", code:409, message:"You have already voted for this draft"},
+                        {id:"409l", code:409, message:"This review is not cooperative"},
                         {id:"500", code:200, message:"Internal Server Error"},
                     ];
 
@@ -71,10 +72,11 @@ exports.reviewExist = function(reviewId){
     });
 }
 
-exports.draftExistAndOpen = function(draftId){
+exports.draftExistAndOpen = function(draftId, filmId, reviewId){
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id FROM drafts WHERE id = ? AND status = ?";
-        db.get(sql, [draftId, true], (err, rows) => {
+        const sql = `SELECT D.id FROM drafts D, reviews R, films F WHERE D.id = ? AND D.status = ?
+                     AND F.id = R.filmId AND R.id = D.reviewId AND F.id = ? AND R.id = ?`;
+        db.get(sql, [draftId, true, filmId, reviewId], (err, rows) => {
             if(err){
                 reject(err);
             }
