@@ -53,12 +53,21 @@ if(req.isAuthenticated()) {
 }
 
 /*** Defining JSON validator middleware ***/
+let filmCreationSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'film_creation_schema.json')).toString());
+let filmUpdateSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'film_update_schema.json')).toString());
 
-var filmSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'film_schema.json')).toString());
+let reviewIssueSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'review_issue_schema.json')).toString());
+let reviewUpdateSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'review_update_schema.json')).toString());
+
+let draftCreateSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'draft_create_schema.json')).toString());
+let draftUpdateSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'draft_update_schema.json')).toString());
+
+
+
 var userSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'user_schema.json')).toString());
-var reviewSchema = JSON.parse(fs.readFileSync(path.join('.', 'json_schemas', 'review_schema.json')).toString());
 var validator = new Validator({ allErrors: true });
-validator.ajv.addSchema([userSchema, filmSchema, reviewSchema]);
+validator.ajv.addSchema([userSchema, filmCreationSchema, filmUpdateSchema, reviewIssueSchema, 
+                         reviewUpdateSchema, draftCreateSchema, draftUpdateSchema]);
 const addFormats = require('ajv-formats').default;
 addFormats(validator.ajv);
 var validate = validator.validate;
@@ -89,26 +98,26 @@ app.use(session({
 //Route methods
 
 app.get('/api/films/public', filmController.getPublicFilms);
-app.post('/api/films', isLoggedIn, validate({ body: filmSchema }), filmController.createFilm);
+app.post('/api/films', isLoggedIn, validate({ body: filmCreationSchema }), filmController.createFilm);
 app.get('/api/films/private/:filmId', isLoggedIn, filmController.getSinglePrivateFilm);
-app.put('/api/films/private/:filmId', isLoggedIn, filmController.updateSinglePrivateFilm);
+app.put('/api/films/private/:filmId', isLoggedIn, validate({ body: filmUpdateSchema }), filmController.updateSinglePrivateFilm);
 app.delete('/api/films/private/:filmId', isLoggedIn, filmController.deleteSinglePrivateFilm);
 app.get('/api/films/public/invited', isLoggedIn, filmController.getInvitedFilms);
 app.get('/api/films/public/:filmId', filmController.getSinglePublicFilm);
-app.put('/api/films/public/:filmId', isLoggedIn, validate({ body: filmSchema }), filmController.updateSinglePublicFilm);
+app.put('/api/films/public/:filmId', isLoggedIn, validate({ body: filmUpdateSchema }), filmController.updateSinglePublicFilm);
 app.delete('/api/films/public/:filmId', isLoggedIn, filmController.deleteSinglePublicFilm);
 app.get('/api/films/public/:filmId/reviews', reviewController.getFilmReviews);
-app.post('/api/films/public/:filmId/reviews', isLoggedIn, reviewController.issueFilmReview);
+app.post('/api/films/public/:filmId/reviews', isLoggedIn, validate({ body: reviewIssueSchema }), reviewController.issueFilmReview);
 app.get('/api/films/public/:filmId/reviews/:reviewId', reviewController.getSingleReview);
-app.put('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.updateSingleReview);
+app.put('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, validate({ body: reviewUpdateSchema }), reviewController.updateSingleReview);
 app.delete('/api/films/public/:filmId/reviews/:reviewId', isLoggedIn, reviewController.deleteSingleReview);
 
 app.get('/api/films/public/:filmId/reviews/:reviewId/drafts', isLoggedIn, draftController.getDrafts);
-app.post('/api/films/public/:filmId/reviews/:reviewId/drafts', isLoggedIn, draftController.createDraft);
+app.post('/api/films/public/:filmId/reviews/:reviewId/drafts', isLoggedIn, validate({ body: draftCreateSchema }), draftController.createDraft);
 app.get('/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId', isLoggedIn, draftController.getSingleDraft);
-app.put('/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId', isLoggedIn, draftController.voteDraft);
+app.put('/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId', isLoggedIn, validate({ body: draftUpdateSchema }), draftController.voteDraft);
 
-app.get('/api/users', isLoggedIn, userController.getUsers);
+app.get('/api/users', isLoggedIn, validate({ body: userSchema }), userController.getUsers);
 app.post('/api/users/authenticator', userController.authenticateUser);
 app.get('/api/users/:userId', isLoggedIn, userController.getSingleUser);
 app.get('/api/films/private', isLoggedIn, filmController.getPrivateFilms);

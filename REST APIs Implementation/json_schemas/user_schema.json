@@ -8,7 +8,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "path to the JSON Schema to use for the validation of the JSON file describing the user"
+      "description": "path to the JSON Schema to use for the validation of the JSON data structure"
     },
     "id": {
       "type": "integer",
@@ -27,8 +27,8 @@
       "type": "string",
       "minLength" : 6,
       "maxLength": 20,
-      "description": "password of the user"
+      "description": "user password"
     }
   },
-  "required": ["email"]
+  "required": ["email", "password"]
 }

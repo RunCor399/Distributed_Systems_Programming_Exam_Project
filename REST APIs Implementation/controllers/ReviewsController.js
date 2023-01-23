@@ -74,19 +74,13 @@ module.exports.deleteSingleReview = function deleteSingleReview (req, res, next)
 };
 
 module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
-  console.log(req.params.filmId, req.body.filmId)
-  if(req.params.filmId != req.body.filmId){
-    utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': 'The filmId field of the review object is different from the filmdId path parameter.' }], }, 409);
-  }
-  else {
-    Reviews.issueFilmReview(req.body, req.user.id)
+    Reviews.issueFilmReview(req.body, req.params.filmId, req.user.id)
     .then(function (response) {
       utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function (response) {
       utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
     });
-  }
 };
 
 module.exports.updateSingleReview = function updateSingleReview (req, res, next) {

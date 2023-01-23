@@ -1,0 +1,15 @@
+[
+    {
+        "$schema": "../film_creation_schema.json",
+        "title": "film",
+        "private": false
+    },
+    {
+        "$schema": "../film_creation_schema.json",
+        "title": "film",
+        "private": true,
+        "watchDate": "2022-02-02",
+        "rating": 10,
+        "favorite": false
+    }
+]

@@ -210,10 +210,9 @@ exports.deleteReviewers = function(reviewId){
  * - no response expected for this operation
  * 
  **/
- exports.issueFilmReview = function(body, owner) {
+ exports.issueFilmReview = function(body, filmId, owner) {
   return new Promise((resolve, reject) => {
     try{
-        const filmId = body.filmId;
         const reviewers = body.reviewers;
         const review_type = body.review_type;
 
@@ -613,7 +612,7 @@ const createReview = function(review, reviewers) {
   let reviewers_uri = []
 
   for(const reviewer of reviewers){
-    reviewers_uri.push({"userId": "api/users/"+reviewer.userId});
+    reviewers_uri.push({"userId": "/api/users/"+reviewer.userId});
   }
 
   return new Review(review.filmId, review.reviewId, reviewers_uri, completedReview, review.reviewDate, review.rating, review.review, review.type);

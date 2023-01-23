@@ -1,4 +1,11 @@
-{
-    "$schema": "../draft_update_schema.json",
-    "vote": true
-}
+[
+    {
+        "$schema": "../draft_update_schema.json",
+        "vote": true
+    },
+    {
+        "$schema": "../draft_update_schema.json",
+        "vote": false,
+        "reason": "bad"
+    }
+]

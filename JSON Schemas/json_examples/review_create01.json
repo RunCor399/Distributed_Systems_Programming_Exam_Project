@@ -1,7 +1,12 @@
-{
-    "$schema": "../review_create_schema.json",
-    "filmId": 1,
-    "reviewId": 1,
-    "reviewers": [1, 2],
-    "completed": false
-}
+[
+    {
+        "$schema": "../review_issue_schema.json",
+        "reviewers": [1, 2],
+        "review_type": "single"
+    },
+    {
+        "$schema": "../review_issue_schema.json",
+        "reviewers": [1, 2],
+        "review_type": "coop"
+    }
+]

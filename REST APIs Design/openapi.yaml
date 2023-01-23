@@ -261,8 +261,9 @@ paths:
                     items:
                       $ref: '../JSON Schemas/film_public_response_schema.json'
                   next:
-                    type: string
-                    format: uri
+                    type: "string"
+                    format: uri,
+                    default: "/api/films/public?pageNo=2"
         '500':
           description: Internal Server Error
           content: {} 
@@ -468,7 +469,7 @@ paths:
               schema:
                   type: array
                   items:
-                    $ref: '../JSON Schemas/review_response_schema_v2.json'
+                    $ref: '../JSON Schemas/review_response_schema.json'
         '400':
           description: Bad Request
           content: {}
@@ -532,7 +533,7 @@ paths:
                   reviews:
                     type: array
                     items:
-                      $ref: '../JSON Schemas/review_response_schema_v2.json'
+                      $ref: '../JSON Schemas/review_response_schema.json'
                   next:
                     type: string
                     format: uri
@@ -572,7 +573,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../JSON Schemas/review_response_schema_v2.json'
+                $ref: '../JSON Schemas/review_response_schema.json'
         '404':
           description: Not Found
           content: {}
@@ -892,99 +893,7 @@ paths:
           description: Internal Server Error
           content: {}
 
-  # Remove?
-  # '/api/films/public/{filmId}/reviews/{reviewId}/reviewers':
-  #   get:
-  #     tags:
-  #       - 'films/public/{filmId}/reviews/{reviewId}/reviewers'
-  #     summary: Retrieve all the reviewers of a specific review with ID reviewId
-  #     description: >-
-  #       The reviewers of a review with ID reviewId are retrieved, This operation can only be performed by users that have been invited to review this film?. 
-  #     operationId: getAllReviewers
-  #     parameters:
-  #       - name: filmId
-  #         in: path
-  #         description: ID of the film associated to the review for which the reviewers will be retrieved
-  #         required: true
-  #         schema:
-  #           type: integer
-  #           format: int64
-  #       - name: reviewId
-  #         in: path
-  #         description: ID of the review whose reviewers will be retrieved
-  #         required: true
-  #         schema:
-  #           type: integer
-  #           format: int64
-  #       - in: query
-  #         name: pageNo
-  #         required: false
-  #         schema:
-  #           type: integer
-  #         description: ID of the requested page (if absent, the first page is returned)'
-  #     responses:
-  #       '200':
-  #         description: Successful operation
-  #         content:
-  #           application/json:
-  #             schema:
-  #                 type: array
-  #                 items:
-  #                   type: object
-  #                   properties:
-  #                     totalPages:
-  #                       type: integer
-  #                     currentPage:
-  #                       type: integer
-  #                     totalItems:
-  #                       type: integer
-  #                     reviewers:
-  #                       type: array
-  #                       items:
-  #                         type: string
-  #                         format: uri
-  #                         default: /api/users/1
-
-  #                     next:
-  #                       type: string
-  #                       format: uri
-  #       '404':
-  #         description: Not Found
-  #         content: {}
-  #       '500':
-  #         description: Internal Server Error
-  #         content: {}
-
-  # '/api/films/public/assignments':
-  #   post:
-  #     tags:
-  #       - films/public/assignments
-  #     security:
-  #       - cookieAuth: []
-  #     summary: Assign automatically review invitations for the unassigned public films owned by the authenticated user in a balanced manner
-  #     description: >-
-  #       The films owned by the authenticated user who performed the request and that are not assigned to any user for review, are automatically assigned to the
-  #       users of the service in a balanced manner. Only authenticated users can make this request.
-  #     operationId: assignReviewBalanced
-  #     responses:
-  #       '200':
-  #         description: Successful operation
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 properties:
-  #                   filmId:
-  #                    type: integer
-  #                   reviewerId:
-  #                     type: integer
-  #       '401':
-  #         description: Unauthorized
-  #         content: {}
-  #       '500':
-  #         description: Internal Server Error
-  #         content: {}
+  
   '/api/users':
     get:
       tags:

@@ -1,0 +1,23 @@
+{
+    "$schema": "../draft_response_schema.json",
+    "filmId": 2,
+    "reviewId": 1,
+    "draftId": 1,
+    "rating": 10,
+    "review": "review text",
+    "author": "http://film-library.it/api/users/1",
+    "status": "open",
+    "votes": [
+        {
+            "userId": "http://film-library.it/api/user/1",
+            "vote": true
+        },
+        {
+            "userId": "http://film-library.it/api/user/2",
+            "vote": false,
+            "reason": "bad"
+        }
+    ],
+    "self": "http://film-library.it/api/films/public/2/reviews/1/drafts/1",
+    "reviewLink": "http://film-library.it/api/films/public/2/reviews/1"
+}

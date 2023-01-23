@@ -222,8 +222,7 @@ const reviewsService = require('./ReviewsService');
             else {
               var sql3 = 'UPDATE films SET title = ?';
               var parameters = [film.title];
-            //   sql3 = sql3.concat(', private = ?');
-            //   parameters.push(film.private);
+
               sql3 = sql3.concat(' WHERE id = ?');
               parameters.push(filmId);
   

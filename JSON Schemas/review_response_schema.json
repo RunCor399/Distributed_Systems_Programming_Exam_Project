@@ -78,16 +78,7 @@
         "default": "/api/films/public/2/reviews/1/drafts"
       }
     },
-    "required": ["filmId", "reviewId", "reviewers"],
-    "if": {
-      "properties": { "review_type": { "const": "coop" } }
-    },
-    "then": {
-      "not": {
-          "properties": { "completed": { "const": true } }
-        },
-      "required": ["draftsLink"]
-    },
+    "required": ["filmId", "reviewId", "reviewers", "review_type", "self", "draftsLink", "completed"],
     "dependencies": {
       "completed": {
         "oneOf": [

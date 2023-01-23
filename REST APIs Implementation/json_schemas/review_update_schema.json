@@ -1,22 +1,14 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id" : "http://www.my-schema.com/review_schema.json",
-    "title": "Review Create",
-    "description": "JSON Schema that represents a Review Creation",
+    "$id" : "http://www.my-schema.com/review_update_schema.json",
+    "title": "Review Update",
+    "description": "JSON Schema that represents the fields that get modified in a review",
     "type": "object",
     "additionalProperties": false,
     "properties": {
       "$schema": {
         "type": "string",
         "description": "path to the JSON Schema to use for the validation of the data structure"
-      },
-      "reviewers": {
-        "type": "array",
-        "items": {
-          "type": "integer"
-        },
-        "uniqueItems": true,
-        "minItems": 1
       },
       "completed": {
         "type": "boolean",
@@ -38,24 +30,9 @@
         "type": "string",
         "description": "a textual description of the review",
         "maxLength": 1000
-      },
-      "review_type": {
-        "type": "string",
-        "enum": ["single", "coop"]
-      },
-      "self": {
-        
       }
     },
-    "required": ["reviewers", "review_type", "completed"],
-    "if": {
-        "properties": { "review_type": { "const": "coop" } }
-    },
-    "then": {
-        "not": {
-          "properties": { "completed": { "const": true } }
-        }
-    },
+    "required": ["completed"],
     "dependencies": {
       "completed": {
         "oneOf": [
@@ -87,5 +64,4 @@
       "rating": ["completed"],
       "review": ["completed"]
     }
-  }
-  
+}

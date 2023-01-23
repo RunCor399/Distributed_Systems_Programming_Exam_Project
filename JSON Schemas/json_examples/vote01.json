@@ -1,5 +1,0 @@
-{
-    "$schema": "../vote_schema.json",
-    "userId": "http://film-library.com/api/users/1",
-    "vote": true
-}

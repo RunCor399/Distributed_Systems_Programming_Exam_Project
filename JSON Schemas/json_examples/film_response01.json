@@ -1,0 +1,21 @@
+[
+    {
+        "$schema": "../film_public_response_schema.json",
+        "title": "abc",
+        "owner": "http://film-library.it/api/users/1",
+        "filmId": 1,
+        "self": "http://film-library.it/api/films/public/1",
+        "private": false
+    },
+    {
+        "$schema": "../film_private_response_schema.json",
+        "title": "abc",
+        "owner": "http://film-library.it/api/users/1",
+        "filmId": 1,
+        "self": "http://film-library.it/api/films/private/1",
+        "private": true,
+        "watchDate": "2022-02-02",
+        "rating": 8,
+        "favorite": true
+    }
+]

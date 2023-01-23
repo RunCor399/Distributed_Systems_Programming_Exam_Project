@@ -155,7 +155,7 @@ module.exports.createFilm = function createFilm (req, res, next) {
     var owner = req.user.id;
     Films.createFilm(film, owner)
         .then(function(response) {
-            utils.writeJson(res, {'param': 'Server', 'msg': response[0]["message"]}, response[0]["code"]);
+            utils.writeJson(res, {'param': 'Server', 'msg': response[0]["payload"]}, response[0]["code"]);
         })
         .catch(function(response) {
             utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"] }], }, response[0]["code"]);
