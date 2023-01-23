@@ -21,7 +21,7 @@ module.exports.getFilmReviews = function getFilmReviews (req, res, next) {
                 var totalPage=Math.ceil(numOfReviews / constants.OFFSET);
                 next = Number(pageNo) + 1;
                 if (pageNo>totalPage) {
-                    utils.writeJson(res, { errors: [{ 'param': 'Server', 'msg': response[0]["message"]}], }, response[0]["code"]);
+                    utils.writeJson(res, { totalPages: totalPage, currentPage: pageNo, totalItems: numOfReviews, reviews: []}, response[0]["code"]);
                 } else if (pageNo == totalPage) {
                     utils.writeJson(res, {
                         totalPages: totalPage,
@@ -76,6 +76,7 @@ module.exports.deleteSingleReview = function deleteSingleReview (req, res, next)
 module.exports.issueFilmReview = function issueFilmReview (req, res, next) {
     Reviews.issueFilmReview(req.body, req.params.filmId, req.user.id)
     .then(function (response) {
+      console.log(response[0]);
       utils.writeJson(res, response[0]["payload"], response[0]["code"]);
     })
     .catch(function (response) {

@@ -25,6 +25,7 @@ const responseMessages = [
                         {id:"409j", code:409, message:"This draft doesn't exist or it has already been closed"},
                         {id:"409k", code:409, message:"You have already voted for this draft"},
                         {id:"409l", code:409, message:"This review is not cooperative"},
+                        {id:"409m", code:409, message:"You can't issue a review invitation only to yourself"},
                         {id:"500", code:200, message:"Internal Server Error"},
                     ];
 

@@ -216,6 +216,11 @@ exports.deleteReviewers = function(reviewId){
         const reviewers = body.reviewers;
         const review_type = body.review_type;
 
+        if(checkOwnerReviewerConstraints(owner, reviewers, body.review_type)){
+            reject(uf.getResponseMessage("409m"));
+            return;
+        }
+
         const sql1 = "SELECT owner, private FROM films WHERE id = ?";
         db.all(sql1, [filmId], (err, rows) => {
             if (err){
@@ -240,9 +245,10 @@ exports.deleteReviewers = function(reviewId){
                                 issueCooperativeReview(filmId, reviewers).then((result) => {
                                     reviewId = result;
                                     endTransaction().then(() => {
-                                        let createdReview = new Review(filmId, reviewId, reviewers, false);
+                                        let nullParams = [undefined, undefined, undefined];
+                                        let createdReview = new Review(filmId, reviewId, reviewers, false, ...nullParams, "coop");
                                         let response = uf.getResponseMessage("201");
-                                        response["payload"] = createdReview;
+                                        response[0]["payload"] = createdReview;
 
                                         resolve(response);
                                     }).catch(() => {
@@ -288,8 +294,9 @@ exports.deleteReviewers = function(reviewId){
                                             const reviewId = result;
 
                                             await addReviewerToReview(reviewId, userId);
-
-                                            createdReviews.push(new Review(filmId, reviewId, [userId], false));
+                                            
+                                            let nullParams = [undefined, undefined, undefined];
+                                            createdReviews.push(new Review(filmId, reviewId, [userId], false, ...nullParams, "single"));
                                             await endTransaction();
                                         } catch (err) {
                                             await abortTransaction();
@@ -298,7 +305,7 @@ exports.deleteReviewers = function(reviewId){
                                     }
 
                                     let response = uf.getResponseMessage("201");
-                                    response["payload"] = createdReviews;
+                                    response[0]["payload"] = createdReviews;
                                     resolve(response);
                                 }
                                 else{
@@ -329,11 +336,25 @@ exports.getReviewIdsByFilm = function(filmId){
             }
             else{
                 let response = uf.getResponseMessage("200");
-                response["payload"] = rows; 
+                response[0]["payload"] = rows; 
                 resolve(response);
             }
         })
     })
+}
+
+
+
+const checkOwnerReviewerConstraints = function(owner, reviewers, type){
+    if(type === "single"){
+        //owner must not be included among single reviewers
+        return reviewers.indexOf(owner) !== -1 ? true : false;
+    }
+    else{
+        //owner must not be the only cooperative reviewer
+        return (reviewers.length === 1) && (reviewers[0] === owner);
+    }
+    
 }
 
 //Checks if a user that was invited to "single review" a film, was already invited to review that film

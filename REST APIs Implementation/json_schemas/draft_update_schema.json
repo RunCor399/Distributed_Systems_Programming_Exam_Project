@@ -21,5 +21,8 @@
         }
     },
     "if": {"properties": {"vote": {"const": false}}},
-    "then": {"required": ["reason"]}
+    "then": {"required": ["reason"]},
+    "if": {"properties": {"vote": {"const": true}}},
+    "then": {"not": {"required": ["reason"]}}
+    
 }
