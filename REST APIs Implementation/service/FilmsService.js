@@ -266,29 +266,48 @@ const reviewsService = require('./ReviewsService');
               reject(uf.getResponseMessage("403a"));
           }
           else {
-              let reviewIds = await reviewsService.getReviewIdsByFilm(filmId);
-
-              for(const reviewId of reviewIds){
-                await draftsService.deleteDraftsAndVotesOfReview(reviewId.id)
-                await reviewsService.deleteReviewers(reviewId.id);
-              }
+              try{
+                await uf.beginTransaction();
               
-              const sql3 = 'DELETE FROM reviews WHERE filmId = ?';
-              db.run(sql3, [filmId], (err) => {
-                  if (err){
-                    console.log(err);
+                let reviewIds = await reviewsService.getReviewIdsByFilm(filmId);
+                let promises = [];
+                console.log("filmId: ", filmId)
+                console.log(reviewIds)
+                for(const reviewId of reviewIds){
+                    promises.push(await draftsService.deleteDraftsAndVotesOfReview(reviewId.id));
+                    promises.push(await reviewsService.deleteReviewers(reviewId.id));
+                }
+
+                await Promise.all(promises).then(() => {
+                    const sql3 = 'DELETE FROM reviews WHERE filmId = ?';
+                    db.run(sql3, [filmId], async (err) => {
+                        if (err){
+                            reject(uf.getResponseMessage("500"));
+                            await uf.abortTransaction();
+                        }
+                        else {
+                            const sql3 = 'DELETE FROM films WHERE id = ?';
+                            db.run(sql3, [filmId], async (err) => {
+                                if (err){
+                                    reject(uf.getResponseMessage("500"));
+                                    await uf.abortTransaction();
+                                }
+                                else{
+                                    resolve(uf.getResponseMessage("204"));
+                                    await uf.endTransaction();
+                                }
+                            })
+                        }
+                    })
+                })
+            } catch(err){
+                try{
+                    await uf.abortTransaction();
                     reject(uf.getResponseMessage("500"));
-                  }
-                  else {
-                      const sql3 = 'DELETE FROM films WHERE id = ?';
-                      db.run(sql3, [filmId], (err) => {
-                          if (err)
-                              reject(uf.getResponseMessage("500"));
-                          else
-                              resolve(uf.getResponseMessage("204"));
-                      })
-                  }
-              })
+                } catch(err){
+                    reject(uf.getResponseMessage("500"));
+                }
+            }
           }
       });
     } catch (err){

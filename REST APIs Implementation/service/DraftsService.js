@@ -37,7 +37,6 @@ exports.getDrafts = function(req){
             let check4 = await checkPermissions(reviewId, userId);
             
             if(check1 && check2 && check3 && check4){
-                console.log("checks passed");
                 let sql = `SELECT D.id AS draftId, D.reviewId AS reviewId, D.userId AS author, D.rating, D.review, D.status
                         FROM drafts D, reviews R, films F WHERE F.id = R.filmId AND R.id = D.reviewId AND F.id = ? AND R.id = ?`;
 
@@ -148,12 +147,16 @@ exports.createDraft = function(filmId, reviewId, userId, draft){
             let check4 = await checkReviewIsCooperative(reviewId);
             let check5 = await checkDraftAlreadyOpen(reviewId);
 
+            await uf.beginTransaction();
+
             if(check1 && check2 && check3 && check4 && check5){
                 const sql = "INSERT INTO drafts(reviewId, userId, rating, review, status) VALUES(?,?,?,?,?)";
                     
                 db.run(sql, [reviewId, userId, draft.rating, draft.review, 1], async (err) => {
                     if(err){
                         reject(uf.getResponseMessage("500"));
+                        await uf.abortTransaction();
+                        return;
                     }
                     else{
                         let lastID = await uf.getLastInsertId();
@@ -166,32 +169,44 @@ exports.createDraft = function(filmId, reviewId, userId, draft){
                             response[0]["payload"] = createdDraft;
 
                             resolve(response);
+                            await uf.endTransaction();
                         }
                         else{
                             reject(uf.getResponseMessage("500"));
+                            await uf.abortTransaction();
                         }
                     }
-                })
+                });
 
             //Find a way to isolate and generalize this kind of errors
             }
             else if(!check1){
                 reject(uf.getResponseMessage("409f"));
+                await uf.abortTransaction();
             }
             else if(!check2){
                 reject(uf.getResponseMessage("409g"));
+                await uf.abortTransaction();
             }
             else if(!check3){
                 reject(uf.getResponseMessage("409b"))
+                await uf.abortTransaction();
             }
             else if(!check4){
                 reject(uf.getResponseMessage("409h"))
+                await uf.abortTransaction();
             }
             else if(!check5){
                 reject(uf.getResponseMessage("409i"));
+                await uf.abortTransaction();
             }
         } catch(err){
-            reject(uf.getResponseMessage("500"));
+            try{
+                await uf.abortTransaction();
+                reject(uf.getResponseMessage("500"));
+            } catch(err){
+                reject(uf.getResponseMessage("500"));
+            }
         }
     });
 }
@@ -215,10 +230,13 @@ exports.voteDraft = function voteDraft(req, res, next){
                 let vote = req.body.vote;
 
                 vote === false ? reason = req.body.reason : null;
-    
+                
+                await uf.beginTransaction();
+
                 await insertVote(draftId, userId, {"vote": vote, "reason": reason});
                 await evaluateVoteAction(draftId, reviewId, userId);
 
+                await uf.endTransaction();
                 resolve(uf.getResponseMessage("204"));
             }
             else if(!check1){
@@ -237,7 +255,12 @@ exports.voteDraft = function voteDraft(req, res, next){
                 reject(uf.getResponseMessage("409k"))
             }
         } catch(err){
-            reject(uf.getResponseMessage("500"));
+            try{
+                await uf.abortTransaction();
+                reject(uf.getResponseMessage("500"));
+            } catch(err){
+                reject(uf.getResponseMessage("500"));
+            }
         }
     })
 }

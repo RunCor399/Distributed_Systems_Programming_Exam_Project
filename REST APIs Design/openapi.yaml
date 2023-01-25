@@ -450,8 +450,6 @@ paths:
             schema:
               type: object
               properties:
-                filmId:
-                  type: integer
                 review_type:
                   type: string
                   default: "coop"

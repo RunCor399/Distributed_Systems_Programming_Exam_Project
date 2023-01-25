@@ -31,3 +31,43 @@ INSERT INTO reviews (filmId, completed, reviewDate, rating, review, type) VALUES
 (12, 1, '2022-12-01', 9, 'Inception was a mind-bending film', 'coop'),
 (13, 0, NULL, NULL, NULL, 'coop');
 
+
+
+INSERT INTO reviewers(reviewId, userId) VALUES 
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+();
+
+
+INSERT INTO drafts(reviewId, userId, rating, review, status) VALUES
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+();
+
+INSERT INTO votes(draftId, userId, vote, reason) VALUES
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+(),
+();
+

@@ -101,7 +101,7 @@ const getFilmReviewers = function(reviewId){
     //Incompleted reviews cant be get, they can be seen by reviewers through /invited api
   return new Promise((resolve, reject) => {
       const sql = "SELECT filmId, id AS reviewId, completed, reviewDate, rating, review, type FROM reviews WHERE reviewId = ? AND filmId = ?";
-      console.log(filmId, reviewId);
+
       db.all(sql, [reviewId, filmId], (err, rows) => {
           if (err)
               reject(uf.getResponseMessage("500"));
@@ -135,7 +135,7 @@ const getFilmReviewers = function(reviewId){
  exports.deleteSingleReview = function(filmId, reviewId, userId) {
   return new Promise(async (resolve, reject) => {
     try{
-        await beginTransaction();
+        await uf.beginTransaction()
         
         let result = await exports.deleteReviewers(reviewId);
         await draftsService.deleteDraftsAndVotesOfReview(reviewId);
@@ -146,8 +146,9 @@ const getFilmReviewers = function(reviewId){
                 if (err){
                     reject(uf.getResponseMessage("500"));
                 }
-                else if (rows.length === 0)
+                else if (rows.length === 0){
                     reject(uf.getResponseMessage("404"));
+                }
                 else if(userId != rows[0].owner) {
                     reject(uf.getResponseMessage("403a"));
                 }
@@ -156,22 +157,24 @@ const getFilmReviewers = function(reviewId){
                 }
                 else {
                     const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND id = ?';
-                    db.run(sql2, [filmId, reviewId], (err) => {
+                    db.run(sql2, [filmId, reviewId], async (err) => {
                         if (err){
                             reject(uf.getResponseMessage("500"));
                         }
                         else
                             resolve(uf.getResponseMessage("204"));
+                            await uf.endTransaction();
+                            return;
                     })
                 }
             });
-        }
 
-        await endTransaction();
+            await uf.abortTransaction();
+        }
     }
     catch(err){
         try{
-            await abortTransaction();
+            await uf.abortTransaction();
             reject(uf.getResponseMessage("500"));
         }
         catch(err){
@@ -240,21 +243,22 @@ exports.deleteReviewers = function(reviewId){
                         if (review_type === "coop" && reviewers.length > 1){
                             let reviewId;
         
-                            //cooperative review, no further checks
-                            beginTransaction().then(() => {
+                            uf.beginTransaction().then(() => {
                                 issueCooperativeReview(filmId, reviewers).then((result) => {
                                     reviewId = result;
-                                    endTransaction().then(() => {
+                                    uf.endTransaction().then(() => {
                                         let nullParams = [undefined, undefined, undefined];
                                         let createdReview = new Review(filmId, reviewId, reviewers, false, ...nullParams, "coop");
                                         let response = uf.getResponseMessage("201");
                                         response[0]["payload"] = createdReview;
 
                                         resolve(response);
-                                    }).catch(() => {
+                                    }).catch(async () => {
+                                        await uf.abortTransaction();
                                         reject(uf.getResponseMessage("500"));
                                     })
-                                }).catch(() => {
+                                }).catch(async () => {
+                                    await uf.abortTransaction();
                                     reject(uf.getResponseMessage("409c"));
                                 })
                             }).catch(() => {
@@ -288,7 +292,7 @@ exports.deleteReviewers = function(reviewId){
                                 if(toBeIssued.length > 0){
                                     for(const userId of toBeIssued){
                                         try {
-                                            await beginTransaction();
+                                            await uf.beginTransaction();
 
                                             const result = await issueSingleReview(filmId);
                                             const reviewId = result;
@@ -297,9 +301,9 @@ exports.deleteReviewers = function(reviewId){
                                             
                                             let nullParams = [undefined, undefined, undefined];
                                             createdReviews.push(new Review(filmId, reviewId, [userId], false, ...nullParams, "single"));
-                                            await endTransaction();
+                                            await uf.endTransaction();
                                         } catch (err) {
-                                            await abortTransaction();
+                                            await uf.abortTransaction();
                                             reject(uf.getResponseMessage("500"));
                                         } 
                                     }
@@ -332,12 +336,10 @@ exports.getReviewIdsByFilm = function(filmId){
         
         db.all(sql, [filmId], (err, rows) => {
             if(err){
-                reject(uf.getResponseMessage("500"));
+                reject(err);
             }
             else{
-                let response = uf.getResponseMessage("200");
-                response[0]["payload"] = rows; 
-                resolve(response);
+                resolve(rows);
             }
         })
     })
@@ -377,47 +379,6 @@ const checkSingleUserReviewing = function(userId, filmId){
     })
 }
 
-const beginTransaction = function(){
-    return new Promise((resolve, reject) => {
-        db.run("BEGIN;", (err) => {
-            if(err){
-                console.log(err);
-                reject(err);
-            }
-            else{
-                resolve(true);
-            }
-        });
-    })
-}
-
-const endTransaction = function(){
-    return new Promise((resolve, reject) => {
-        db.run("COMMIT;", (err) => {
-            if(err){
-                console.log(err);
-                reject(err);
-            }
-            else{
-                resolve(true);
-            }
-        });
-    })
-}
-
-const abortTransaction = function(){
-    return new Promise((resolve, reject) => {
-        db.run("ROLLBACK;", (err) => {
-            if(err){
-                console.log(err);
-                reject(err);
-            }
-            else{
-                resolve(true);
-            }
-        });
-    })
-}
 
 //Add entries in reviewers table
 const addReviewerToReview = function(reviewId, userId){
@@ -467,38 +428,39 @@ const issueSingleReview = function(filmId){
 //What happens if a coop review is issued to only one user? => demoted to single review
 // Issue a review to multiple users 
 const issueCooperativeReview = function(filmId, reviewers){
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const sql = `INSERT INTO reviews(filmId, completed, type) VALUES(?,?,?);`;
 
-        db.run(sql, [filmId, false, 'coop'], (err) => {
-            if(err){
-                console.log(err);
-                reject('500');
-            }
-            else{
-                db.get("SELECT last_insert_rowid() as lastID", (err, row) => {
-                    if(err){
-                        console.log(err);
-                        reject(err);
-                    }
-                    else{
-                        const lastReviewId = row.lastID;
-                        const sql_reviewers = `INSERT INTO reviewers(reviewId, userId) VALUES(?,?);`;
-
-                        for(const reviewer of reviewers){
-                            db.run(sql_reviewers, [lastReviewId, reviewer], (err) => {
-                                if(err){
-                                    console.log(err);
-                                    reject(err);
-                                }
-                            });
+        try{
+            db.run(sql, [filmId, false, 'coop'], async (err) => {
+                if(err){
+                    reject('500');
+                }
+                else{
+                    db.get("SELECT last_insert_rowid() as lastID", async (err, row) => {
+                        if(err){
+                            reject(err);
                         }
+                        else{
+                            const lastReviewId = row.lastID;
+                            const sql_reviewers = `INSERT INTO reviewers(reviewId, userId) VALUES(?,?);`;
 
-                        resolve(lastReviewId);
-                    }
-                });
-            }
-        });
+                            for(const reviewer of reviewers){
+                                db.run(sql_reviewers, [lastReviewId, reviewer], (err) => {
+                                    if(err){
+                                        reject(err);
+                                    }
+                                });
+                            }
+
+                            resolve(lastReviewId);
+                        }
+                    });
+                }
+            });
+        } catch(err){
+             reject(uf.getResponseMessage("500"));
+        }
     })
 }
 

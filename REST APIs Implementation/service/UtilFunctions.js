@@ -125,3 +125,48 @@ exports.getResponseMessage = function(code){
     return responseMessages.filter((elem) => elem.id === code)
 }
 
+exports.beginTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("BEGIN;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
+                console.log("begin");
+            }
+        });
+    })
+}
+
+exports.endTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("COMMIT;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
+                console.log("ended");
+            }
+        });
+    })
+}
+
+exports.abortTransaction = function(){
+    return new Promise((resolve, reject) => {
+        db.run("ROLLBACK;", (err) => {
+            if(err){
+                console.log(err);
+                reject(err);
+            }
+            else{
+                resolve(true);
+                console.log("aborted");
+            }
+        });
+    })
+}
+
