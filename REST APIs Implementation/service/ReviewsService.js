@@ -219,10 +219,10 @@ exports.deleteReviewers = function(reviewId){
         const reviewers = body.reviewers;
         const review_type = body.review_type;
 
-        if(checkOwnerReviewerConstraints(owner, reviewers, body.review_type)){
-            reject(uf.getResponseMessage("409m"));
-            return;
-        }
+        // if(checkOwnerReviewerConstraints(owner, reviewers, body.review_type)){
+        //     reject(uf.getResponseMessage("409m"));
+        //     return;
+        // }
 
         const sql1 = "SELECT owner, private FROM films WHERE id = ?";
         db.all(sql1, [filmId], (err, rows) => {
@@ -347,17 +347,18 @@ exports.getReviewIdsByFilm = function(filmId){
 
 
 
-const checkOwnerReviewerConstraints = function(owner, reviewers, type){
-    if(type === "single"){
-        //owner must not be included among single reviewers
-        return reviewers.indexOf(owner) !== -1 ? true : false;
-    }
-    else{
-        //owner must not be the only cooperative reviewer
-        return (reviewers.length === 1) && (reviewers[0] === owner);
-    }
+// const checkOwnerReviewerConstraints = function(owner, reviewers, type){
+//     // modify
+//     if(type === "single"){
+//         //owner must not be included among single reviewers
+//         return reviewers.indexOf(owner) !== -1 ? true : false;
+//     }
+//     else{
+//         //owner must not be the only cooperative reviewer
+//         return (reviewers.length === 1) && (reviewers[0] === owner);
+//     }
     
-}
+// }
 
 //Checks if a user that was invited to "single review" a film, was already invited to review that film
 const checkSingleUserReviewing = function(userId, filmId){
@@ -425,8 +426,7 @@ const issueSingleReview = function(filmId){
 }
 
 
-//What happens if a coop review is issued to only one user? => demoted to single review
-// Issue a review to multiple users 
+
 const issueCooperativeReview = function(filmId, reviewers){
     return new Promise(async (resolve, reject) => {
         const sql = `INSERT INTO reviews(filmId, completed, type) VALUES(?,?,?);`;
