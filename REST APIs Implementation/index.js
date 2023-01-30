@@ -81,7 +81,7 @@ var options = {
     },
 };
 
-var expressAppConfig = oas3Tools.expressAppConfig(path.join(__dirname, 'api/openapi.yaml'), options);
+var expressAppConfig = oas3Tools.expressAppConfig(path.join(__dirname, '../REST APIs Design/openapi.yaml'), options);
 var app = expressAppConfig.getApp();
 
 // Creating the session
