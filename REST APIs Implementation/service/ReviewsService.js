@@ -145,39 +145,43 @@ const getFilmReviewers = function(reviewId){
             db.all(sql1, [filmId, reviewId], (err, rows) => {
                 if (err){
                     reject(uf.getResponseMessage("500"));
+                    uf.abortTransaction();
                 }
                 else if (rows.length === 0){
                     reject(uf.getResponseMessage("404"));
+                    uf.abortTransaction();
                 }
                 else if(userId != rows[0].owner) {
                     reject(uf.getResponseMessage("403a"));
+                    uf.abortTransaction();
                 }
                 else if(rows[0].completed == 1) {
                     reject(uf.getResponseMessage("403b"));
+                    uf.abortTransaction();
                 }
                 else {
                     const sql2 = 'DELETE FROM reviews WHERE filmId = ? AND id = ?';
                     db.run(sql2, [filmId, reviewId], async (err) => {
                         if (err){
                             reject(uf.getResponseMessage("500"));
+                            uf.abortTransaction();
                         }
                         else
                             resolve(uf.getResponseMessage("204"));
                             await uf.endTransaction();
-                            return;
                     })
                 }
             });
-
-            await uf.abortTransaction();
         }
     }
     catch(err){
         try{
+            console.log("ca", err);
             await uf.abortTransaction();
             reject(uf.getResponseMessage("500"));
         }
         catch(err){
+            console.log("tch", err)
             reject(uf.getResponseMessage("500"));
         }
     }

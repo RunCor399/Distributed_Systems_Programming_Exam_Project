@@ -64,6 +64,9 @@ For additional clarity, the following image shows the overall design of the Data
 <br>
 <br>
 
+#### Note: 
+Boolean fields may seem empty when visualized from Visual Studio Code SQLite DB Viewer, but they're actually there and can be seen by hovering each specific entry (expressed as a 0 or a 1).
+
 ### **OpenAPI & JSON Schemas**
 To implement **HATEOAS** principles and model the new components of the system, I've redefined all JSON Schemas related to already existing concepts and added new JSON Schemas specifically targeted at new components.
 
