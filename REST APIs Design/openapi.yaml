@@ -52,6 +52,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/film_creation_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/film_creation01.json'
         required: true
       responses:
         '201':
@@ -60,6 +62,8 @@ paths:
             application/json:
               schema:
                   $ref: '../JSON Schemas/film_public_response_schema.json'
+              example:
+                $ref: '../JSON Schemas/json_examples/film_response01.json'
         '400':
           description: Bad Request
           content: {}
@@ -172,6 +176,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/film_update_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/film_update01.json'
         required: true
       responses:
         '204':
@@ -369,6 +375,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/film_update_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/film_update01.json'
         required: true
       responses:
         '204':
@@ -459,6 +467,8 @@ paths:
                     type: integer
                     minItems: 1
                     default: 1  
+            example:
+              $ref: '../JSON Schemas/json_examples/review_create01.json'
       responses:
         '201':
           description: Created
@@ -468,6 +478,8 @@ paths:
                   type: array
                   items:
                     $ref: '../JSON Schemas/review_response_schema.json'
+              example:
+                $ref: '../JSON Schemas/json_examples/review_response01.json'
         '400':
           description: Bad Request
           content: {}
@@ -607,6 +619,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/review_update_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/review_update01.json'
       responses:
         '204':
           description: No Content
@@ -758,6 +772,8 @@ paths:
             schema:
               type: object
               $ref: '../JSON Schemas/draft_create_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/draft_create01.json'
         required: true
       responses:
         '201':
@@ -768,6 +784,8 @@ paths:
                   type: array
                   items:
                     $ref: '../JSON Schemas/draft_response_schema.json'
+              example:
+                $ref: '../JSON Schemas/json_examples/draft_response01.json'
         '400':
           description: Bad Request
           content: {}
@@ -871,6 +889,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/draft_update_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/draft_update01.json'
       responses:
         '204':
           description: No Content
@@ -973,6 +993,8 @@ paths:
           application/json:
             schema:
               $ref: '../JSON Schemas/user_login_schema.json'
+            example:
+              $ref: '../JSON Schemas/json_examples/user_login01.json'
         required: true
       responses:
         '204':
@@ -989,119 +1011,6 @@ paths:
           description: Unauthorized
           content: {}
 components:
-  # schemas:
-    # User: 
-    #   description: schema for User data structures
-    #   type: object
-    #   additionalProperties: false
-    #   properties:
-    #     $schema:
-    #       type: string
-    #       description: path to the JSON Schema to use for the validation of the JSON data structure
-    #         describing the user
-    #     id:
-    #       type: integer
-    #       description: unique identifier for the user
-    #     email:
-    #       type: string
-    #       format: email
-    #       description: user email
-    #     name:
-    #       type: string
-    #       description: username
-    #     password:
-    #       type: string
-    #       minLength: 6
-    #       maxLength: 20
-    #       description: user password
-    #     self: 
-    #       type: string
-    #       format: uri
-    #   required:
-    #   - email
-    # Film:
-    #   description: schema for Film data structures
-    #   type: object
-    #   additionalProperties: false
-    #   properties:
-    #     $schema:
-    #       type: string
-    #       description: path to the JSON Schema to use for the validation of the JSON data structure
-    #         describing the film
-    #     id:
-    #       type: integer
-    #       description: unique identifier for the film data structure
-    #     title:
-    #       type: string
-    #       description: textual title of the film
-    #     owner:
-    #       type: integer
-    #       description: unique identifier of the the film data structure owner
-    #     private:
-    #       type: boolean
-    #       description: true if only the owner of the film data structure can access it, false otherwise
-    #       default: 'true'
-    #     watchDate:
-    #       type: string
-    #       format: date
-    #       description: the date when the film was watched by the owner
-    #     rating:
-    #       type: integer
-    #       description: the rating the owner has given to the film
-    #       minimum: 1
-    #       maximum: 10
-    #     favorite:
-    #       type: boolean
-    #       description: 'true if the film is among the favourite
-    #         ones of the owner, false otherwise '
-    #       default: 'false'
-    #     self: 
-    #       type: string
-    #       format: uri
-    #   required:
-    #   - title
-    #   - owner
-    #   - private
-    # Review:
-    #   description: schema for Review data structures
-    #   type: object
-    #   additionalProperties: false
-    #   properties:
-    #     $schema:
-    #       type: string
-    #       description: path to the JSON Schema to use for the validation of the JSON data structure
-    #         describing the film
-    #     filmId:
-    #       type: integer
-    #       description: unique identifier of the film for which a review invitation has been
-    #         issued
-    #     reviewerId:
-    #       type: integer
-    #       description: unique identifier of the user who has received the review invitation
-    #     completed:
-    #       type: boolean
-    #       description: true if the review has been completed, false
-    #         otherwise
-    #       default: 'false'
-    #     reviewDate:
-    #       type: string
-    #       format: date
-    #       description: the date when the review has been completed by the invited user
-    #     rating:
-    #       type: integer
-    #       description: the rating the reviewer has given to the film
-    #       minimum: 1
-    #       maximum: 10
-    #     review:
-    #       type: string
-    #       description: a textual description of the review
-    #       maxLength: 1000
-    #     self: 
-    #       type: string
-    #       format: uri
-    #   required:
-    #   - filmId
-    #   - reviewerId
   securitySchemes:
     cookieAuth:
       description: JWT to identify the authenticated user.

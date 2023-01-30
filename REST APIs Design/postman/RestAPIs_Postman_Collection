@@ -1,0 +1,1859 @@
+{
+	"info": {
+		"_postman_id": "84ab69de-b276-4ba4-b36e-08a2c7f91b9f",
+		"name": "DSP Exam API Calls",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20779734"
+	},
+	"item": [
+		{
+			"name": "Private Films",
+			"item": [
+				{
+					"name": "Create a new Film",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"New Private Film\",\r\n  \"private\": true,\r\n  \"watchDate\": \"2023-01-29\",\r\n  \"rating\": 10,\r\n  \"favorite\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Private Films",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/private/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"private",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Single Private Film",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/private/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"private",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Private Film",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"updated name\",\r\n  \"watchDate\": \"2023-01-29\",\r\n  \"rating\": 10,\r\n  \"favorite\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/private/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"private",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Private Film",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/private/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"private",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Public Films",
+			"item": [
+				{
+					"name": "Get Public Films",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Review Invitations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/invited",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								"invited"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Single Public Film",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Public Film",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"updated public\",\r\n  \"watchDate\": \"2023-01-29\",\r\n  \"rating\": 10,\r\n  \"favorite\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Public Film",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Issue a Coop Review Invitation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"review_type\": \"coop\",\r\n  \"reviewers\": [1, 2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Issue a Single Review Invitation Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"review_type\": \"single\",\r\n  \"reviewers\": [1, 2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Reviews of a Film",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Single Review of a Film",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								},
+								{
+									"key": "reviewId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Review of a Film",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"completed\": true,\r\n  \"reviewDate\": \"2023-01-29\",\r\n  \"rating\": 10,\r\n  \"review\": \"review\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								},
+								{
+									"key": "reviewId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Review of a Film",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								},
+								{
+									"key": "reviewId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Single User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/users/:userId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"users",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "user.dsp@polito.it",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/users/authenticator?type=login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"users",
+								"authenticator"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "login"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Drafts",
+			"item": [
+				{
+					"name": "Get all Drafts of a Specific Review",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId",
+								"drafts"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								},
+								{
+									"key": "reviewId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Draft for a Specific Review",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 3,\r\n  \"review\": \"draft\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId",
+								"drafts"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								},
+								{
+									"key": "reviewId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Single Draft of a Review",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId",
+								"drafts",
+								":draftId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": null
+								},
+								{
+									"key": "reviewId",
+									"value": null
+								},
+								{
+									"key": "draftId",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Positive Vote a Draft of a Review",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"vote\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId",
+								"drafts",
+								":draftId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								},
+								{
+									"key": "reviewId",
+									"value": ""
+								},
+								{
+									"key": "draftId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative Vote a Draft of a Review Copy",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"vote\": false,\r\n  \"reason\": \"bad\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"films",
+								"public",
+								":filmId",
+								"reviews",
+								":reviewId",
+								"drafts",
+								":draftId"
+							],
+							"variable": [
+								{
+									"key": "filmId",
+									"value": ""
+								},
+								{
+									"key": "reviewId",
+									"value": ""
+								},
+								{
+									"key": "draftId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tests",
+			"item": [
+				{
+					"name": "Successfull Draft Election",
+					"item": [
+						{
+							"name": "Authenticate User 1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "user.dsp@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Issue a Review Invitation Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"review_type\": \"coop\",\r\n  \"reviewers\": [1, 2, 3]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 1 Creates Draft",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"rating\": 10,\r\n  \"review\": \"draft\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										},
+										{
+											"key": "reviewId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authenticate User 2",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "frank.stein@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "shelley97",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 2 Positive Vote",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"vote\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts",
+										":draftId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										},
+										{
+											"key": "reviewId",
+											"value": ""
+										},
+										{
+											"key": "draftId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authenticate User 3",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "karen.makise@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "fg204v213",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 3 Positive Vote",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"vote\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts",
+										":draftId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": null
+										},
+										{
+											"key": "reviewId",
+											"value": null
+										},
+										{
+											"key": "draftId",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Unsuccessfull Draft Election",
+					"item": [
+						{
+							"name": "Authenticate User 1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "user.dsp@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Issue a Review Invitation",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"review_type\": \"coop\",\r\n  \"reviewers\": [1, 2,  3]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 1 Creates Draft",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"rating\": 10,\r\n  \"review\": \"draft\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										},
+										{
+											"key": "reviewId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authenticate User 2",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "frank.stein@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "shelley97",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 2 Positive Vote",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"vote\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts",
+										":draftId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": null
+										},
+										{
+											"key": "reviewId",
+											"value": null
+										},
+										{
+											"key": "draftId",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authenticate User 3",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "karen.makise@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "fg204v213",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 3 Negative Vote",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "  {\r\n  \"vote\": false,\r\n  \"reason\": \"bad\"\r\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId/drafts/:draftId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId",
+										"drafts",
+										":draftId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": "19"
+										},
+										{
+											"key": "reviewId",
+											"value": "40"
+										},
+										{
+											"key": "draftId",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create and Delete Public Film",
+					"item": [
+						{
+							"name": "Authenticate User 1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "user.dsp@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a new Public Film",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"title\": \"New Public Film\",\r\n  \"private\": false\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Public Film Copy",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Issue Review Invitation and Delete it",
+					"item": [
+						{
+							"name": "Authenticate User 1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "user.dsp@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Issue a Review Invitation",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"review_type\": \"coop\",\r\n  \"reviewers\": [1, 2]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Review Invitation",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										},
+										{
+											"key": "reviewId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Issue Multiple Single Reviews and Complete one",
+					"item": [
+						{
+							"name": "Authenticate User 1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "user.dsp@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Issue a Review Invitation",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"review_type\": \"single\",\r\n  \"reviewers\": [1, 2]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authenticate User 2",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "frank.stein@polito.it",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "shelley97",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/users/authenticator?type=login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"users",
+										"authenticator"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "login"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 2 Completes Single Review",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"completed\": true,\r\n  \"reviewDate\": \"2023-01-29\",\r\n  \"rating\": 10,\r\n  \"review\": \"review\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/films/public/:filmId/reviews/:reviewId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"films",
+										"public",
+										":filmId",
+										"reviews",
+										":reviewId"
+									],
+									"variable": [
+										{
+											"key": "filmId",
+											"value": null
+										},
+										{
+											"key": "reviewId",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

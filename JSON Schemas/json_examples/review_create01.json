@@ -1,12 +1,6 @@
-[
-    {
-        "$schema": "../review_issue_schema.json",
-        "reviewers": [1, 2],
-        "review_type": "single"
-    },
+
     {
         "$schema": "../review_issue_schema.json",
         "reviewers": [1, 2],
         "review_type": "coop"
     }
-]

@@ -34,40 +34,29 @@ INSERT INTO reviews (filmId, completed, reviewDate, rating, review, type) VALUES
 
 
 INSERT INTO reviewers(reviewId, userId) VALUES 
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-();
+(1,1),
+(5,2),
+(7,1),
+(9,2),
+(2, 1),
+(2, 2),
+(3, 1),
+(3, 2),
+(3, 3),
+(4, 1),
+(4, 2),
+(6, 1),
+(6, 2),
+(6, 3),
+(8, 1),
+(8, 2),
+(8, 3),
+(10, 1),
+(10, 2),
+(11, 1),
+(11, 2);
 
 
-INSERT INTO drafts(reviewId, userId, rating, review, status) VALUES
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-();
 
-INSERT INTO votes(draftId, userId, vote, reason) VALUES
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-();
+
 

@@ -65,7 +65,7 @@ To implement **HATEOAS** principles and model the new components of the system, 
 
 The approach I've used was quite verbose, as a matter of fact I decided to create for each specific endpoint that included either a Request or a Response body, a specific JSON Schema that exactly mirrors the actual data that will be transported both in requests and responses.
 
-All these schemas can be found in the **JSON Schemas** directory and also embedded inside the **OpenAPI Documentation**.
+All these schemas can be found in the **JSON Schemas** directory and also embedded inside the **OpenAPI Documentation** which can be found in **./REST APIs Design/openapi.yaml**.
 
 
 
@@ -120,6 +120,7 @@ A particularity about the second check is that if one or more of the users have 
 
 At the end of these checks a vote will be inserted in the Database and in case all reviewers 
 have expressed their vote for this draft, the latter and eventually the review to which it refers, will be updated accordingly.
+
    
 ### **Error Code Logic**
 To present users specific error messages depending on what went wrong, I've implemented my own logic for error management specified in **UtilFunctions.js** file inside **service** directory.
@@ -144,3 +145,17 @@ Extract of the error messages associated to their code:
     ...
 
 A specific function will then pass a whole object of this dictionary to the Controller that will be in charge of returning a response to the client.
+
+## **Test**
+### **Postman Collection**
+Inside **./REST APIs Design/postman** directory I've included a Postman Collection that includes all the APIs of the application and some additional test cases that can be manually executed to check some of the most important features of the system.
+
+ I've left URL parameters of each call empty so that they can be freely defined, on the other hand body parameters of requests have already be defined according to the JSON Schemas.
+
+### **Database Files**
+Inside **./database** directory it is possible to find three distinct files:
+1. **databaseV1.db**: the SQLite Database file
+   
+2. **table_creation.sql**: Queries used to create the final design of the Database, *Users* and *Films* Tables are not included in this file as their schema wasn't modified at all.
+
+3. **insert_data_queries.sql**: INSERT queries used to populate *Films*, *Reviews* and *Reviewers* Tables; *Drafts* and *Votes* Tables have been populated using Postman with some test Requests, *User* Table is the same as the one of Laboratory 1

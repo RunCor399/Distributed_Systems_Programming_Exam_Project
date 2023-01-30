@@ -1,9 +1,4 @@
-[
-    {
-        "$schema": "../film_creation_schema.json",
-        "title": "film",
-        "private": false
-    },
+
     {
         "$schema": "../film_creation_schema.json",
         "title": "film",
@@ -12,4 +7,3 @@
         "rating": 10,
         "favorite": false
     }
-]
