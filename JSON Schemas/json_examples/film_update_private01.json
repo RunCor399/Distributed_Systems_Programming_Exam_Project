@@ -1,5 +1,5 @@
 {
-    "$schema": "../film_update_schema.json",
+    "$schema": "../film_private_update_schema.json",
     "title": "film update",
     "watchDate": "2022-02-02",
     "rating": 9,
