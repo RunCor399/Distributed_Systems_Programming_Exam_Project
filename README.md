@@ -4,7 +4,7 @@
 ## **Steps to deploy the application**
 1. git clone https://github.com/polito-DSP-2022-23/exam-call-1-RunCor399.git
 2. **npm install**
-3. **npm run server** to run it with nodemon or **npm run start
+3. **npm run server** to run it with nodemon or **npm run start**
 
 ## **Design**
 In this sections will be explained the main design choices adopted for the development of this exam assignment
